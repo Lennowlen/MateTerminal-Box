@@ -18,8 +18,25 @@ Dedicated Terminal Emulator, SSH Manager & ServerBox Telemetry Hub for **Huawei 
 
 ## Version Changelog & Release Artifacts
 
-### [v1.3.0] - Termius Dark UI/UX, VT100 Matrix Streaming & Sticky Keys
+### [v1.4.0] - Authentic Termius Midnight Pro Theme & Direct Android Drawer Alignment
 *Release Date: Current Production*
+
+#### Highlights & Improvements
+- **Authentic Termius Color System Extraction**: Sampled exact RGB/HEX tokens from the official Termius Android application (`com.server.auditor.ssh.client`): Midnight Navy drawer (`#151629`), Content canvas (`#1b1c2e`), Terminal viewport (`#141524`), Header bar (`#292a3d`), Card surface (`#25263a`), Brand violet (`#7952ff`), Keybar surface (`#151627`), and Key tactile chips (`#27283c`).
+- **Termius Navigation Drawer Architecture**: Implemented full Termius left-hand navigation structure featuring Hosts, ServerBox HUD, Port Forwarding (SSH Tunnels), Snippets, Keys & Identities, and Activity Logs, with live drawer search and pinned bottom Settings.
+- **Context-Aware Floating Action Button (FAB)**: Dynamic Termius violet floating plus button that automatically adapts to the active drawer context (New Host, New Port Forward, New Snippet, New SSH Key).
+- **Dedicated Management Views & Modals**: Implemented complete Termius-style list cards and creation modals for SSH Port Forwarding tunnels (Local/Remote/Dynamic SOCKS5), Snippets with bash tags, and SSH Key Pair generation/import (RSA/Ed25519).
+- **Expanded Touch Accessory Keybar**: Enhanced Termius-style keybar with tactile dark chips, sticky modifiers (`CTRL`, `ALT`), symbol insertion (`|`, `~`, `/`, `-`, `_`, `$`), arrow clusters (`UP`, `DN`, `LT`, `RT`), and utility shortcuts (`PASTE`, `CLEAR`, `ESC`, `TAB`).
+
+#### Download Artifacts
+- **Universal Android APK**: `mate-terminal-box-v1.4.0-universal.apk`
+- **Offline Web Simulator**: `mate-terminal-box-v1.4.0-web-simulator.zip`
+- **Git Commit Tag**: `v1.4.0` (`5f78d17`)
+
+---
+
+### [v1.3.0] - Termius Dark UI/UX, VT100 Matrix Streaming & Sticky Keys
+*Release Date: Previous Update*
 
 #### Highlights & Improvements
 - **Termius Dark Signature Palette**: Applied official Termius Dark background (`#0e111a`), deep terminal black canvas (`#090b10`), Termius Violet brand accent (`#7952ff`), and high-contrast JetBrains Mono typography.

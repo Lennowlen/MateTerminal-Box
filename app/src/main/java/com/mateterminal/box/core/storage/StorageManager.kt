@@ -4,20 +4,29 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object StorageManager {
     private const val PREFS_NAME = "mateterminal_vault"
     private const val KEY_HOSTS = "saved_hosts"
     private const val KEY_WINDOWS = "saved_windows"
     private const val KEY_SNIPPETS = "saved_snippets"
-    private const val KEY_ACTIVE_THEME = "active_theme"
+    private const val KEY_SETTINGS = "app_settings"
+    private const val KEY_LOGS_PREFIX = "logs_date_"
 
     private lateinit var prefs: SharedPreferences
     private val gson = Gson()
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         seedDefaultsIfEmpty()
+    }
+
+    fun getTodayDate(): String {
+        return dateFormat.format(Date())
     }
 
     private fun seedDefaultsIfEmpty() {
@@ -67,8 +76,19 @@ object StorageManager {
             )
             saveSnippets(defaultSnippets)
         }
+
+        // Record initial system boot log
+        if (getDailyLogs(getTodayDate()).isEmpty()) {
+            logActivity(
+                hostId = "local_device",
+                hostName = "Huawei MatePad 12X",
+                eventType = LogEventType.SESSION_START,
+                message = "MateTerminal-Box initialized on MatePad 12X (2800x1840 display)"
+            )
+        }
     }
 
+    // --- HOST MANAGEMENT ---
     fun getHosts(): List<HostModel> {
         val json = prefs.getString(KEY_HOSTS, null) ?: return emptyList()
         val type = object : TypeToken<List<HostModel>>() {}.type
@@ -91,6 +111,7 @@ object StorageManager {
         saveHosts(list)
     }
 
+    // --- WINDOW & TAB MANAGEMENT ---
     fun getWindows(): List<SessionWindowModel> {
         val json = prefs.getString(KEY_WINDOWS, null) ?: return emptyList()
         val type = object : TypeToken<List<SessionWindowModel>>() {}.type
@@ -101,6 +122,7 @@ object StorageManager {
         prefs.edit().putString(KEY_WINDOWS, gson.toJson(windows)).apply()
     }
 
+    // --- SNIPPETS ---
     fun getSnippets(): List<SnippetModel> {
         val json = prefs.getString(KEY_SNIPPETS, null) ?: return emptyList()
         val type = object : TypeToken<List<SnippetModel>>() {}.type
@@ -109,5 +131,57 @@ object StorageManager {
 
     fun saveSnippets(snippets: List<SnippetModel>) {
         prefs.edit().putString(KEY_SNIPPETS, gson.toJson(snippets)).apply()
+    }
+
+    // --- APP SETTINGS ---
+    fun getSettings(): AppSettingsModel {
+        val json = prefs.getString(KEY_SETTINGS, null) ?: return AppSettingsModel()
+        return gson.fromJson(json, AppSettingsModel::class.java) ?: AppSettingsModel()
+    }
+
+    fun saveSettings(settings: AppSettingsModel) {
+        prefs.edit().putString(KEY_SETTINGS, gson.toJson(settings)).apply()
+    }
+
+    // --- DAILY ACTIVITY LOGGING ---
+    fun logActivity(
+        hostId: String,
+        hostName: String,
+        eventType: LogEventType,
+        message: String,
+        executionDurationMs: Long = 0
+    ): ActivityLogEntry {
+        val today = getTodayDate()
+        val entry = ActivityLogEntry(
+            logDate = today,
+            hostId = hostId,
+            hostName = hostName,
+            eventType = eventType,
+            message = message,
+            executionDurationMs = executionDurationMs,
+            syncStatus = SyncStatus.PENDING
+        )
+
+        val currentLogs = getDailyLogs(today).toMutableList()
+        currentLogs.add(0, entry)
+        prefs.edit().putString(KEY_LOGS_PREFIX + today, gson.toJson(currentLogs)).apply()
+        return entry
+    }
+
+    fun getDailyLogs(dateStr: String): List<ActivityLogEntry> {
+        val json = prefs.getString(KEY_LOGS_PREFIX + dateStr, null) ?: return emptyList()
+        val type = object : TypeToken<List<ActivityLogEntry>>() {}.type
+        return gson.fromJson(json, type) ?: emptyList()
+    }
+
+    fun markLogsSynced(dateStr: String, syncedIds: Set<String>) {
+        val currentLogs = getDailyLogs(dateStr).map { log ->
+            if (syncedIds.contains(log.id)) {
+                log.copy(syncStatus = SyncStatus.SYNCED, syncedAt = System.currentTimeMillis())
+            } else {
+                log
+            }
+        }
+        prefs.edit().putString(KEY_LOGS_PREFIX + dateStr, gson.toJson(currentLogs)).apply()
     }
 }

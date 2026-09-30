@@ -26,7 +26,8 @@ It integrates the best core strengths of three industry-standard tools into a un
 - **Local Native PTY Shell**: High-speed pseudo-terminal implementation in C++ (`openpty`, `fork`, `execvp`) with POSIX terminal capabilities.
 - **Oh-My-Zsh & Tokyo Night Aesthetics**: Native ANSI 24-bit TrueColor rendering, Powerline/Agnoster prompt styling, and custom developer themes.
 
-### 3. ServerBox Telemetry & System HUD
+### 3. Modular ServerBox Telemetry & System HUD (Optional)
+- **Toggleable & Optional**: HUD view can be turned on/off via quick toolbar toggle or through settings to provide a distraction-free terminal workstation.
 - Real-time SSH-based polling for host performance metrics:
   - Multi-core CPU load and architecture info.
   - Memory consumption (used, cached, buffers, total).
@@ -34,8 +35,19 @@ It integrates the best core strengths of three industry-standard tools into a un
   - Real-time network throughput (Rx / Tx rate tracking).
   - Docker container state breakdown (running, stopped, paused).
 
-### 4. Tablet Multi-Pane & Tab Session Manager
+### 4. Collapsible & Fixed Sidebar Navigation
+- **Collapsible Toggle**: Smooth animated drawer toggle (`[<]` / `[>]`) expanding active workspace from 900px to full 1200px.
+- **Pinned / Fixed Mode**: Configurable in Settings to lock the sidebar open for heavy multi-session switching.
+- **Fast Segmented Switcher**: Instant switching between Hosts, ServerBox HUD, Snippets, and Daily Logs.
+
+### 5. Daily Activity Logging & Rann-Labs Server Sync
+- **Local Offline-First Partitioning**: Chronologically records session lifecycle events, command executions, SSH connections, and alerts partitioned by date (`YYYY-MM-DD`) in local SQLite storage.
+- **Rann-Labs Central Synchronization**: REST API batch sync to `https://api.rann-labs.com/v1/logs/sync` with offline idempotency, Bearer authentication, and retry queue.
+- **Integrated Audit Viewer**: Built-in date picker, live keyword search, sync status indicators, and one-click JSON export.
+
+### 6. Tablet Multi-Pane & Tab Session Manager
 - **Multi-Pane Layouts**: Switch instantly between single pane (1x1) and dual side-by-side terminal panes (1x2) on the 2800x1840 canvas.
+- **Comprehensive Settings Dialog**: Real-time configuration of Themes (Tokyo Night, Monokai Pro, Cyber Slate, Solarized Dark), font scaling (12px to 18px), Rann-Labs endpoint, auto-sync triggers, and log retention policies.
 - **Hardware & Software Accessory Bar**: Dedicated shortcuts for `ESC`, `TAB`, `CTRL`, `ALT`, `PIPE (|)`, `ARROW KEYS`, and customizable snippets.
 - **Foreground Keepalive Service**: Persistent notification service with `WAKE_LOCK` to prevent OS sleep termination during long-running tasks.
 

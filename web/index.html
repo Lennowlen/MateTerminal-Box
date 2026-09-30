@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MateTerminal-Box | Huawei MatePad 12X Pro Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="tablet-frame">
+        <!-- Tablet Top Bezel & Status Bar -->
+        <header class="tablet-status-bar">
+            <div class="status-left">
+                <span class="device-pill">HUAWEI MatePad 12X (3:2 144Hz)</span>
+                <span class="aspect-pill">2800 x 1840 Edge-to-Edge</span>
+            </div>
+            <div class="status-center">
+                <span class="app-branding">MateTerminal-Box Pro v1.0.0</span>
+            </div>
+            <div class="status-right">
+                <span class="indicator live-dot"></span>
+                <span class="keepalive-status">KEEPALIVE ACTIVE</span>
+                <span id="clock" class="clock">12:00:00</span>
+            </div>
+        </header>
+
+        <!-- Main Tablet Canvas -->
+        <main class="tablet-canvas">
+            <!-- Left Tablet Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="brand-logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+                            <polyline points="4 17 10 11 4 5"></polyline>
+                            <line x1="12" y1="19" x2="20" y2="19"></line>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h3>MateTerminal</h3>
+                        <p>ServerBox Suite</p>
+                    </div>
+                    <button class="icon-btn" id="btn-add-host" title="Add Host">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="nav-segmented">
+                    <button class="nav-segment-btn active" data-mode="hosts" id="nav-hosts">Hosts</button>
+                    <button class="nav-segment-btn" data-mode="serverbox" id="nav-serverbox">ServerBox</button>
+                    <button class="nav-segment-btn" data-mode="snippets" id="nav-snippets">Snippets</button>
+                </nav>
+
+                <div class="sidebar-section-title">
+                    <span id="sidebar-title">SAVED SESSIONS</span>
+                    <span class="counter-badge" id="sidebar-counter">3</span>
+                </div>
+
+                <!-- Host List Container -->
+                <div class="host-list" id="host-list">
+                    <!-- Populated dynamically via app.js -->
+                </div>
+
+                <!-- Footer Quick Info -->
+                <div class="sidebar-footer">
+                    <div class="footer-row">
+                        <span class="sub-label">Resolution</span>
+                        <span class="val-label">2800 x 1840 (3:2)</span>
+                    </div>
+                    <div class="footer-row">
+                        <span class="sub-label">Engine</span>
+                        <span class="val-label">Native PTY + JSch</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Tablet Workspace -->
+            <section class="workspace">
+                <!-- Top Tab Bar & Actions -->
+                <div class="top-tab-bar">
+                    <div class="tabs-scroll" id="tabs-container">
+                        <!-- Dynamic Tabs -->
+                    </div>
+
+                    <div class="workspace-actions">
+                        <button class="action-btn" id="btn-new-tab" title="Open New Tab">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Tab</span>
+                        </button>
+                        <button class="action-btn" id="btn-split-toggle" title="Toggle 1x2 Split">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                            </svg>
+                            <span id="split-btn-text">Split 1x2</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Terminal & Monitoring Panes View -->
+                <div class="view-container">
+                    <!-- Split Panes (1x1 or 1x2) -->
+                    <div class="terminal-panes-wrapper" id="terminal-wrapper">
+                        <!-- Left Pane (Primary) -->
+                        <div class="terminal-pane pane-primary" id="pane-1">
+                            <div class="pane-header">
+                                <span class="pane-title" id="pane-1-title">localhost [Local PTY]</span>
+                                <span class="pane-tag">TTY 1</span>
+                            </div>
+                            <div class="terminal-screen" id="term-screen-1">
+                                <!-- ANSI Oh-My-Zsh rendered here -->
+                            </div>
+                            <div class="terminal-input-row">
+                                <span class="term-prompt" id="prompt-1">&#x279c; ~ &#x276f;</span>
+                                <input type="text" id="term-input-1" class="term-input" placeholder="Type command (e.g. htop, uname -a, docker ps)..." autofocus />
+                            </div>
+                        </div>
+
+                        <!-- Right Pane (Secondary Split 1x2) -->
+                        <div class="terminal-pane pane-secondary hidden" id="pane-2">
+                            <div class="pane-header">
+                                <span class="pane-title" id="pane-2-title">Production VPS [SSH]</span>
+                                <span class="pane-tag">TTY 2</span>
+                            </div>
+                            <div class="terminal-screen" id="term-screen-2">
+                                <!-- ANSI Oh-My-Zsh rendered here -->
+                            </div>
+                            <div class="terminal-input-row">
+                                <span class="term-prompt" id="prompt-2">ubuntu@cloud ~ &#x276f;</span>
+                                <input type="text" id="term-input-2" class="term-input" placeholder="Type command for split pane..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ServerBox Live Telemetry HUD View -->
+                    <div class="serverbox-hud hidden" id="serverbox-hud">
+                        <div class="hud-header">
+                            <div>
+                                <h2 id="hud-host-name">Production VPS (Singapore)</h2>
+                                <p id="hud-host-meta">Linux 6.5.0-35-generic | 103.145.22.45:22 | Uptime: 48d 14h</p>
+                            </div>
+                            <div class="hud-badge-online">ONLINE</div>
+                        </div>
+
+                        <!-- Live Metrics Cards Grid -->
+                        <div class="metrics-grid">
+                            <!-- CPU Card -->
+                            <div class="metric-card">
+                                <div class="card-header">
+                                    <span class="card-title">CPU LOAD &amp; CORES</span>
+                                    <span class="card-metric-val" id="hud-cpu-val">24.5%</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-cyan" id="hud-cpu-bar" style="width: 24.5%;"></div>
+                                </div>
+                                <div class="cpu-cores-grid" id="cpu-cores">
+                                    <div class="core-cell"><span>C0</span><div class="core-bar"><div style="width: 30%"></div></div></div>
+                                    <div class="core-cell"><span>C1</span><div class="core-bar"><div style="width: 18%"></div></div></div>
+                                    <div class="core-cell"><span>C2</span><div class="core-bar"><div style="width: 45%"></div></div></div>
+                                    <div class="core-cell"><span>C3</span><div class="core-bar"><div style="width: 12%"></div></div></div>
+                                </div>
+                            </div>
+
+                            <!-- RAM Card -->
+                            <div class="metric-card">
+                                <div class="card-header">
+                                    <span class="card-title">MEMORY &amp; SWAP</span>
+                                    <span class="card-metric-val" id="hud-mem-val">3.8 GB / 8.0 GB (47%)</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-emerald" id="hud-mem-bar" style="width: 47%;"></div>
+                                </div>
+                                <div class="stat-sub-row">
+                                    <span>Cached: 2.1 GB</span>
+                                    <span>Swap: 120 MB / 4.0 GB</span>
+                                </div>
+                            </div>
+
+                            <!-- Network I/O Card -->
+                            <div class="metric-card">
+                                <div class="card-header">
+                                    <span class="card-title">NETWORK TRAFFIC</span>
+                                    <span class="card-metric-val" id="hud-net-val">RX: 1.4 MB/s | TX: 320 KB/s</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-amber" id="hud-net-bar" style="width: 60%;"></div>
+                                </div>
+                                <div class="stat-sub-row">
+                                    <span>Total RX: 482.4 GB</span>
+                                    <span>Total TX: 914.8 GB</span>
+                                </div>
+                            </div>
+
+                            <!-- Disk Mounts Card -->
+                            <div class="metric-card">
+                                <div class="card-header">
+                                    <span class="card-title">STORAGE VOLUMES</span>
+                                    <span class="card-metric-val">/dev/nvme0n1p1</span>
+                                </div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill fill-purple" style="width: 38%;"></div>
+                                </div>
+                                <div class="stat-sub-row">
+                                    <span>/ (Root): 38 GB / 100 GB</span>
+                                    <span>Free: 62 GB (38%)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Docker Containers Table -->
+                        <div class="hud-sub-section">
+                            <h4 class="sub-section-title">ACTIVE DOCKER CONTAINERS</h4>
+                            <table class="docker-table">
+                                <thead>
+                                    <tr>
+                                        <th>Container</th>
+                                        <th>Image</th>
+                                        <th>Status</th>
+                                        <th>Ports</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="docker-tbody">
+                                    <tr>
+                                        <td><strong>caddy_gateway</strong></td>
+                                        <td>caddy:2.7-alpine</td>
+                                        <td><span class="status-up">Up 14 days</span></td>
+                                        <td>80:80, 443:443</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>postgres_primary</strong></td>
+                                        <td>postgres:16-alpine</td>
+                                        <td><span class="status-up">Up 14 days</span></td>
+                                        <td>5432:5432</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>redis_cache</strong></td>
+                                        <td>redis:7.2-alpine</td>
+                                        <td><span class="status-up">Up 14 days</span></td>
+                                        <td>6379:6379</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Accessory Key Toolbar -->
+                <div class="accessory-keybar">
+                    <button class="key-btn" data-key="ESC">ESC</button>
+                    <button class="key-btn" data-key="TAB">TAB</button>
+                    <button class="key-btn" data-key="CTRL">CTRL</button>
+                    <button class="key-btn" data-key="ALT">ALT</button>
+                    <button class="key-btn sym" data-key="|">|</button>
+                    <button class="key-btn sym" data-key="~">~</button>
+                    <button class="key-btn sym" data-key="/">/</button>
+                    <button class="key-btn sym" data-key="-">-</button>
+                    <button class="key-btn sym" data-key="_">_</button>
+                    <button class="key-btn sym" data-key="$">$</button>
+                    <button class="key-btn" data-key="UP">UP</button>
+                    <button class="key-btn" data-key="DOWN">DN</button>
+                    <button class="key-btn" data-key="LEFT">LT</button>
+                    <button class="key-btn" data-key="RIGHT">RT</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Host Modal Dialog -->
+    <div class="modal-overlay hidden" id="modal-add-host">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add New SSH Host</h3>
+                <button class="icon-btn" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Profile Name</label>
+                    <input type="text" id="input-host-name" placeholder="e.g. Production Cluster" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Hostname / IP</label>
+                        <input type="text" id="input-host-ip" placeholder="e.g. 192.168.1.100" />
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Port</label>
+                        <input type="number" id="input-host-port" value="22" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="input-host-user" value="root" />
+                </div>
+                <div class="form-group">
+                    <label>Password or Private Key</label>
+                    <input type="password" id="input-host-pass" placeholder="Password or RSA/Ed25519 Key" />
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="input-host-category">
+                        <option value="Cloud">Cloud VPS</option>
+                        <option value="HomeLab">HomeLab</option>
+                        <option value="Local">Local Shell</option>
+                        <option value="Staging">Staging</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-btn-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-btn-save">Save Host</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

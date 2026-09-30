@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#0f172a"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Rounded Terminal Frame -->
+    <path
+        android:fillColor="#1e293b"
+        android:strokeColor="#38bdf8"
+        android:strokeWidth="2"
+        android:pathData="M18,22 h72 a8,8 0 0 1 8,8 v48 a8,8 0 0 1 -8,8 h-72 a8,8 0 0 1 -8,-8 v-48 a8,8 0 0 1 8,-8 z" />
+    <!-- Terminal Prompt Chevron (Oh-My-Zsh symbol) -->
+    <path
+        android:strokeColor="#06b6d4"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M30,42 L42,54 L30,66" />
+    <!-- Cursor -->
+    <path
+        android:strokeColor="#10b981"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M48,66 L62,66" />
+    <!-- Status Dots -->
+    <path
+        android:fillColor="#f43f5e"
+        android:pathData="M24,30a2,2 0 1,0 4,0a2,2 0 1,0 -4,0" />
+    <path
+        android:fillColor="#f59e0b"
+        android:pathData="M32,30a2,2 0 1,0 4,0a2,2 0 1,0 -4,0" />
+    <path
+        android:fillColor="#10b981"
+        android:pathData="M40,30a2,2 0 1,0 4,0a2,2 0 1,0 -4,0" />
+</vector>

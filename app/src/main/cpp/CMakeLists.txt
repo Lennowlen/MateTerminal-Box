@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.22.1)
+project("ptybridge")
+
+add_library(ptybridge SHARED
+    pty_bridge.cpp
+)
+
+find_library(log-lib log)
+
+target_link_libraries(ptybridge
+    ${log-lib}
+)

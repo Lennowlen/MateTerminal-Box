@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.MateTerminal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/accent_cyan</item>
+        <item name="colorPrimaryVariant">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/bg_primary</item>
+        
+        <item name="colorSecondary">@color/accent_emerald</item>
+        <item name="colorSecondaryVariant">@color/accent_cyan</item>
+        <item name="colorOnSecondary">@color/bg_primary</item>
+        
+        <item name="android:statusBarColor">@color/bg_sidebar</item>
+        <item name="android:navigationBarColor">@color/bg_sidebar</item>
+        <item name="android:windowBackground">@color/bg_primary</item>
+    </style>
+</resources>

@@ -8,7 +8,10 @@
 const STORAGE_KEYS = {
     HOSTS: 'mate_hosts',
     SETTINGS: 'mate_settings',
-    ACTIVITY_LOGS: 'mate_activity_logs'
+    ACTIVITY_LOGS: 'mate_activity_logs',
+    TUNNELS: 'mate_tunnels',
+    KEYS: 'mate_keys',
+    SNIPPETS: 'mate_snippets'
 };
 
 // Default Settings
@@ -88,18 +91,76 @@ const DEFAULT_HOSTS = [
 
 // Initial Seed Data for Snippets
 const DEFAULT_SNIPPETS = [
-    { title: "Docker Status", command: "docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'" },
-    { title: "System Resources", command: "htop" },
-    { title: "Disk Storage Free", command: "df -h -x tmpfs -x devtmpfs" },
-    { title: "Listening Ports", command: "ss -tulpn | grep LISTEN" },
-    { title: "System Info", command: "uname -a && uptime" },
-    { title: "Rann-Labs Sync Check", command: "curl -sI https://api.rann-labs.com/v1/health" }
+    { id: "snip_1", title: "Docker Container List", command: "docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'" },
+    { id: "snip_2", title: "System Resources (htop)", command: "htop" },
+    { id: "snip_3", title: "Disk Storage Utilization", command: "df -h -x tmpfs -x devtmpfs" },
+    { id: "snip_4", title: "Listening Network Ports", command: "ss -tulpn | grep LISTEN" },
+    { id: "snip_5", title: "System Info & Uptime", command: "uname -a && uptime" },
+    { id: "snip_6", title: "Rann-Labs Health Check", command: "curl -sI https://api.rann-labs.com/v1/health" }
+];
+
+// Initial Seed Data for Port Forwarding Tunnels
+const DEFAULT_TUNNELS = [
+    {
+        id: "tun_1",
+        label: "Production Web Port",
+        localPort: 8080,
+        remoteHost: "localhost",
+        remotePort: 80,
+        targetHostId: "demo_vps",
+        active: true
+    },
+    {
+        id: "tun_2",
+        label: "PostgreSQL Remote DB",
+        localPort: 5432,
+        remoteHost: "127.0.0.1",
+        remotePort: 5432,
+        targetHostId: "demo_vps",
+        active: false
+    },
+    {
+        id: "tun_3",
+        label: "HomeLab Grafana Dashboard",
+        localPort: 3000,
+        remoteHost: "localhost",
+        remotePort: 3000,
+        targetHostId: "homelab_pi",
+        active: true
+    }
+];
+
+// Initial Seed Data for SSH Keys
+const DEFAULT_KEYS = [
+    {
+        id: "key_1",
+        name: "matepad12x_hardware_ed25519",
+        algo: "ED25519",
+        fingerprint: "SHA256:4vXn2J9hL8eK+1pQrS0tUvWxYzAbCdEfGhIjKlMnOpQ",
+        created: "2026-03-15"
+    },
+    {
+        id: "key_2",
+        name: "rannlabs_deploy_rsa4096",
+        algo: "RSA 4096",
+        fingerprint: "SHA256:9qRtYuIoPaSdFgHjKlZxCvBnMqWeRtYuIoPaSdFgHjK",
+        created: "2026-02-10"
+    },
+    {
+        id: "key_3",
+        name: "homelab_cluster_root",
+        algo: "ED25519",
+        fingerprint: "SHA256:1aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789aBcDeF",
+        created: "2026-01-20"
+    }
 ];
 
 // App State
 let settings = loadSettings();
 let hosts = loadHosts();
-let snippets = DEFAULT_SNIPPETS;
+let snippets = loadSnippets();
+let tunnels = loadTunnels();
+let keys = loadKeys();
 let activityLogs = loadActivityLogs();
 let currentNavMode = 'hosts';
 let activeTabIndex = 0;
@@ -107,6 +168,7 @@ let isSplit1x2 = false;
 let isSidebarCollapsed = false;
 let activeLogFilterDate = getTodayDateString();
 let activeHudHostId = 'local_device';
+let searchQuery = '';
 
 // Tabs & Session State
 let tabs = [
@@ -127,6 +189,7 @@ const sidebarEl = document.getElementById('sidebar');
 const hostListEl = document.getElementById('host-list');
 const sidebarTitleEl = document.getElementById('sidebar-title');
 const sidebarCounterEl = document.getElementById('sidebar-counter');
+const sidebarSearchInput = document.getElementById('sidebar-search-input');
 const tabsContainerEl = document.getElementById('tabs-container');
 const btnTabScrollLeft = document.getElementById('btn-tab-scroll-left');
 const btnTabScrollRight = document.getElementById('btn-tab-scroll-right');
@@ -142,6 +205,7 @@ const termInput2 = document.getElementById('term-input-2');
 const terminalWrapper = document.getElementById('terminal-wrapper');
 const accessoryBar = document.getElementById('accessory-bar');
 const btnToggleAccessoryBar = document.getElementById('btn-toggle-accessory-bar');
+const fabAddHost = document.getElementById('fab-add-host');
 
 const serverboxHud = document.getElementById('serverbox-hud');
 const hudTargetSelector = document.getElementById('hud-target-selector');
@@ -189,12 +253,19 @@ const settingAutoSync = document.getElementById('setting-auto-sync');
 const settingLogRetention = document.getElementById('setting-log-retention');
 const settingKeepalive = document.getElementById('setting-keepalive');
 
+// Resource Modals
+const modalAddHost = document.getElementById('modal-add-host');
+const modalAddForward = document.getElementById('modal-add-forward');
+const modalAddSnippet = document.getElementById('modal-add-snippet');
+const modalAddKey = document.getElementById('modal-add-key');
+
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     initClock();
     applySettingsToUI();
     initActivityLogsDate();
     initHudTargetSelector();
+    updateForwardHostDropdown();
     renderSidebarList();
     renderTabs();
     renderActiveTerminal();
@@ -278,7 +349,7 @@ function applySettingsToUI() {
     if (settings.enableHud) {
         btnToggleHudMode.style.display = 'flex';
         const navHud = document.getElementById('nav-serverbox');
-        if (navHud) navHud.style.display = 'block';
+        if (navHud) navHud.style.display = 'flex';
     } else {
         btnToggleHudMode.style.display = 'none';
         const navHud = document.getElementById('nav-serverbox');
@@ -292,10 +363,10 @@ function applySettingsToUI() {
     if (accessoryBar) {
         if (settings.showAccessoryBar) {
             accessoryBar.classList.remove('hidden');
-            btnToggleAccessoryBar.classList.add('active');
+            if (btnToggleAccessoryBar) btnToggleAccessoryBar.classList.add('active');
         } else {
             accessoryBar.classList.add('hidden');
-            btnToggleAccessoryBar.classList.remove('active');
+            if (btnToggleAccessoryBar) btnToggleAccessoryBar.classList.remove('active');
         }
     }
 
@@ -323,13 +394,40 @@ function applySettingsToUI() {
     settingKeepalive.checked = settings.keepalive;
 }
 
-// Host Management
+// Storage Loaders
 function loadHosts() {
     try {
         const saved = localStorage.getItem(STORAGE_KEYS.HOSTS);
         return saved ? JSON.parse(saved) : DEFAULT_HOSTS;
     } catch (e) {
         return DEFAULT_HOSTS;
+    }
+}
+
+function loadSnippets() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.SNIPPETS);
+        return saved ? JSON.parse(saved) : DEFAULT_SNIPPETS;
+    } catch (e) {
+        return DEFAULT_SNIPPETS;
+    }
+}
+
+function loadTunnels() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.TUNNELS);
+        return saved ? JSON.parse(saved) : DEFAULT_TUNNELS;
+    } catch (e) {
+        return DEFAULT_TUNNELS;
+    }
+}
+
+function loadKeys() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.KEYS);
+        return saved ? JSON.parse(saved) : DEFAULT_KEYS;
+    } catch (e) {
+        return DEFAULT_KEYS;
     }
 }
 
@@ -349,59 +447,44 @@ function loadActivityLogs() {
 
     const seedLogs = [
         {
-            id: "log_seed_1",
-            logDate: yesterday,
-            timestamp: new Date(Date.now() - 86400000 - 3600000).toISOString(),
-            eventType: "SESSION_OPEN",
-            hostTarget: "Production VPS (Singapore)",
-            commandText: "SSH Connection Established (Key Auth)",
-            durationMs: 450,
-            syncStatus: "SYNCED",
-            remoteSyncTimestamp: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-            id: "log_seed_2",
-            logDate: yesterday,
-            timestamp: new Date(Date.now() - 86400000 - 3000000).toISOString(),
-            eventType: "COMMAND_EXEC",
-            hostTarget: "103.145.22.45",
-            commandText: "docker ps -a",
-            durationMs: 120,
-            syncStatus: "SYNCED",
-            remoteSyncTimestamp: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-            id: "log_seed_3",
+            id: "log_init_1",
             logDate: today,
-            timestamp: new Date(Date.now() - 1800000).toISOString(),
+            timestamp: new Date(Date.now() - 1500000).toISOString(),
             eventType: "SESSION_OPEN",
             hostTarget: "MatePad-12X (Local)",
-            commandText: "PTY Subshell Spawned (UID 10210)",
-            durationMs: 15,
-            syncStatus: "PENDING",
-            remoteSyncTimestamp: null
+            commandText: "pty_bridge initialized for HarmonyOS subsystem",
+            durationMs: 0,
+            syncStatus: "SYNCED"
         },
         {
-            id: "log_seed_4",
+            id: "log_init_2",
             logDate: today,
             timestamp: new Date(Date.now() - 1200000).toISOString(),
             eventType: "COMMAND_EXEC",
-            hostTarget: "localhost",
-            commandText: "uname -a",
-            durationMs: 8,
-            syncStatus: "PENDING",
-            remoteSyncTimestamp: null
+            hostTarget: "Production VPS",
+            commandText: "docker ps -a --format 'table {{.Names}}\t{{.Status}}'",
+            durationMs: 142,
+            syncStatus: "SYNCED"
         },
         {
-            id: "log_seed_5",
+            id: "log_init_3",
             logDate: today,
             timestamp: new Date(Date.now() - 600000).toISOString(),
-            eventType: "TELEMETRY_ALERT",
-            hostTarget: "Production VPS (Singapore)",
-            commandText: "CPU load spike: 82% over 60s window",
+            eventType: "HUD_INSPECT",
+            hostTarget: "MatePad-12X (Local)",
+            commandText: "Polled 8 CPU cores & 12GB LPDDR5 RAM telemetry",
             durationMs: 0,
-            syncStatus: "PENDING",
-            remoteSyncTimestamp: null
+            syncStatus: "PENDING"
+        },
+        {
+            id: "log_init_4",
+            logDate: yesterday,
+            timestamp: new Date(Date.now() - 95000000).toISOString(),
+            eventType: "SSH_CONNECT",
+            hostTarget: "HomeLab Raspberry Pi 5",
+            commandText: "SSH key authentication handshake successful",
+            durationMs: 88,
+            syncStatus: "SYNCED"
         }
     ];
 
@@ -412,15 +495,14 @@ function loadActivityLogs() {
 function recordActivityLog(eventType, hostTarget, commandText, durationMs = 0) {
     const today = getTodayDateString();
     const newEntry = {
-        id: "log_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        id: "log_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
         logDate: today,
         timestamp: new Date().toISOString(),
         eventType: eventType,
         hostTarget: hostTarget,
         commandText: commandText,
         durationMs: durationMs,
-        syncStatus: "PENDING",
-        remoteSyncTimestamp: null
+        syncStatus: "PENDING"
     };
 
     activityLogs.unshift(newEntry);
@@ -429,158 +511,171 @@ function recordActivityLog(eventType, hostTarget, commandText, durationMs = 0) {
     if (currentNavMode === 'logs') {
         renderActivityLogsTable();
     }
+    updateLogsCountBadges();
 }
 
 function initActivityLogsDate() {
+    if (!logDatePicker) return;
     logDatePicker.value = activeLogFilterDate;
     logDatePicker.addEventListener('change', (e) => {
         activeLogFilterDate = e.target.value;
         renderActivityLogsTable();
+        renderSidebarList();
     });
 }
 
+function updateLogsCountBadges() {
+    const pendingCount = activityLogs.filter(l => l.syncStatus === 'PENDING').length;
+    const badgeLogsSync = document.getElementById('badge-logs-sync');
+    if (badgeLogsSync) {
+        badgeLogsSync.textContent = pendingCount > 0 ? `${pendingCount} NEW` : 'SYNC';
+        badgeLogsSync.className = pendingCount > 0 ? 'drawer-badge badge-hud' : 'drawer-badge badge-sync';
+    }
+}
+
 function renderActivityLogsTable() {
-    const searchTerm = (logSearchInput.value || '').toLowerCase().trim();
-    const filtered = activityLogs.filter(log => {
-        const matchesDate = !activeLogFilterDate || log.logDate === activeLogFilterDate;
-        const matchesSearch = !searchTerm ||
-            log.hostTarget.toLowerCase().includes(searchTerm) ||
-            log.commandText.toLowerCase().includes(searchTerm) ||
-            log.eventType.toLowerCase().includes(searchTerm);
-        return matchesDate && matchesSearch;
-    });
-
-    const totalCount = filtered.length;
-    const syncedCount = filtered.filter(l => l.syncStatus === 'SYNCED').length;
-    const pendingCount = totalCount - syncedCount;
-
-    logCountTotal.textContent = `Total: ${totalCount} entries`;
-    logCountSynced.textContent = `Synced: ${syncedCount}`;
-    logCountPending.textContent = `Pending: ${pendingCount}`;
-
+    if (!logsTableBody) return;
     logsTableBody.innerHTML = '';
 
+    const filterText = (logSearchInput ? logSearchInput.value : '').toLowerCase().trim();
+
+    const filtered = activityLogs.filter(log => {
+        const matchesDate = !activeLogFilterDate || log.logDate === activeLogFilterDate;
+        const matchesText = !filterText || 
+            log.hostTarget.toLowerCase().includes(filterText) ||
+            log.commandText.toLowerCase().includes(filterText) ||
+            log.eventType.toLowerCase().includes(filterText);
+        return matchesDate && matchesText;
+    });
+
+    const totalInDate = activityLogs.filter(l => !activeLogFilterDate || l.logDate === activeLogFilterDate).length;
+    const syncedInDate = activityLogs.filter(l => (!activeLogFilterDate || l.logDate === activeLogFilterDate) && l.syncStatus === 'SYNCED').length;
+    const pendingInDate = activityLogs.filter(l => (!activeLogFilterDate || l.logDate === activeLogFilterDate) && l.syncStatus === 'PENDING').length;
+
+    if (logCountTotal) logCountTotal.textContent = `Total: ${totalInDate} entries`;
+    if (logCountSynced) logCountSynced.textContent = `Synced: ${syncedInDate}`;
+    if (logCountPending) logCountPending.textContent = `Pending: ${pendingInDate}`;
+
     if (filtered.length === 0) {
-        logsTableBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">
-                    No activity logs recorded for ${escapeHtml(activeLogFilterDate)}.
-                </td>
-            </tr>
-        `;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">No activity logs found for ${activeLogFilterDate || 'selected criteria'}.</td>`;
+        logsTableBody.appendChild(tr);
         return;
     }
 
     filtered.forEach(log => {
         const tr = document.createElement('tr');
-        
-        let eventBadgeClass = 'event-session';
-        if (log.eventType === 'COMMAND_EXEC') eventBadgeClass = 'event-command';
-        else if (log.eventType === 'SSH_CONNECT') eventBadgeClass = 'event-ssh';
-        else if (log.eventType === 'TELEMETRY_ALERT') eventBadgeClass = 'event-alert';
-        else if (log.eventType === 'SETTINGS_CHANGE') eventBadgeClass = 'event-session';
-        else if (log.eventType === 'ERROR') eventBadgeClass = 'event-error';
-
-        const syncBadgeClass = log.syncStatus === 'SYNCED' ? 'sync-status-synced' : 'sync-status-pending';
+        const typeClass = log.eventType === 'COMMAND_EXEC' ? 'type-cmd' : (log.eventType === 'SESSION_OPEN' || log.eventType === 'SSH_CONNECT' ? 'type-ssh' : 'type-sys');
+        const syncClass = log.syncStatus === 'SYNCED' ? 'log-status-synced' : 'log-status-pending';
 
         tr.innerHTML = `
-            <td style="font-family: var(--font-mono); color: var(--text-secondary);">${formatTimeString(log.timestamp)}</td>
-            <td><span class="log-badge-event ${eventBadgeClass}">${escapeHtml(log.eventType)}</span></td>
-            <td style="font-weight: 500;">${escapeHtml(log.hostTarget)}</td>
-            <td style="font-family: var(--font-mono); color: var(--accent-cyan);">${escapeHtml(log.commandText)}</td>
-            <td style="font-family: var(--font-mono); color: var(--text-muted);">${log.durationMs}ms</td>
-            <td><span class="sync-status-badge ${syncBadgeClass}">${log.syncStatus === 'SYNCED' ? 'Synced (Rann-Labs)' : 'Pending Sync'}</span></td>
+            <td><span class="log-time">${formatTimeString(log.timestamp)}</span></td>
+            <td><span class="log-type-badge ${typeClass}">${log.eventType}</span></td>
+            <td><span class="log-target">${escapeHtml(log.hostTarget)}</span></td>
+            <td><span class="log-cmd">${escapeHtml(log.commandText)}</span></td>
+            <td><span class="log-latency">${log.durationMs > 0 ? log.durationMs + 'ms' : '-'}</span></td>
+            <td><span class="log-status-badge ${syncClass}">${log.syncStatus}</span></td>
         `;
         logsTableBody.appendChild(tr);
     });
 }
 
-// Rann-Labs Server Synchronization
 function syncLogsToRannLabs() {
     const pendingLogs = activityLogs.filter(l => l.syncStatus === 'PENDING');
-    
-    globalSyncBadge.textContent = "Rann-Labs: Syncing...";
-    globalSyncBadge.style.color = "var(--accent-amber)";
-    showToast(`Uploading ${pendingLogs.length} activity log entries to Rann-Labs server...`);
+    if (pendingLogs.length === 0) {
+        showToast('All activity logs are already synchronized to Rann-Labs.');
+        return;
+    }
+
+    if (globalSyncBadge) {
+        globalSyncBadge.textContent = "Rann-Labs: Syncing...";
+        globalSyncBadge.style.color = "var(--accent-amber)";
+    }
+
+    showToast(`Syncing ${pendingLogs.length} activity entries to ${settings.rannlabsEndpoint}...`);
 
     setTimeout(() => {
-        const syncTimestamp = new Date().toISOString();
         activityLogs.forEach(log => {
             if (log.syncStatus === 'PENDING') {
                 log.syncStatus = 'SYNCED';
-                log.remoteSyncTimestamp = syncTimestamp;
             }
         });
-
         localStorage.setItem(STORAGE_KEYS.ACTIVITY_LOGS, JSON.stringify(activityLogs));
-        globalSyncBadge.textContent = "Rann-Labs: Synced";
-        globalSyncBadge.style.color = "var(--accent-emerald)";
 
-        if (currentNavMode === 'logs') {
-            renderActivityLogsTable();
+        if (globalSyncBadge) {
+            globalSyncBadge.textContent = "Rann-Labs: Synced";
+            globalSyncBadge.style.color = "var(--accent-emerald)";
         }
 
-        showToast(`Sync complete: ${pendingLogs.length} entries successfully committed to ${settings.rannlabsEndpoint}`);
-        recordActivityLog('RANN_LABS_SYNC', 'rann-labs.com', `Batch sync succeeded (${pendingLogs.length} logs sent)`, 210);
-    }, 1200);
+        renderActivityLogsTable();
+        renderSidebarList();
+        updateLogsCountBadges();
+        showToast(`Successfully synchronized ${pendingLogs.length} audit logs to Rann-Labs server.`);
+    }, 900);
 }
 
-// Export Activity Logs
 function exportLogsToJson() {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activityLogs, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `mateterminal_logs_${getTodayDateString()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    showToast('Activity logs exported to JSON.');
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `mateterminal_activity_logs_${getTodayDateString()}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    showToast('Activity logs exported as JSON file.');
 }
 
-// Toast notification
-function showToast(message) {
-    toastMessageEl.textContent = message;
-    toastEl.classList.remove('hidden');
-    clearTimeout(toastEl._timer);
-    toastEl._timer = setTimeout(() => {
-        toastEl.classList.add('hidden');
-    }, 3500);
-}
-
-// Navigation switcher & Event Listeners
+// Event Listeners Setup
 function setupEventListeners() {
-    // Nav segments
-    document.getElementById('nav-hosts').addEventListener('click', (e) => switchNavMode('hosts', e.currentTarget));
-    const navHud = document.getElementById('nav-serverbox');
-    if (navHud) navHud.addEventListener('click', (e) => switchNavMode('serverbox', e.currentTarget));
-    document.getElementById('nav-snippets').addEventListener('click', (e) => switchNavMode('snippets', e.currentTarget));
-    document.getElementById('nav-logs').addEventListener('click', (e) => switchNavMode('logs', e.currentTarget));
+    // Drawer Nav Items
+    document.querySelectorAll('.drawer-nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const mode = item.dataset.mode;
+            switchNavMode(mode, item);
+        });
+    });
+
+    // Sidebar Search Filter Input
+    if (sidebarSearchInput) {
+        sidebarSearchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            renderSidebarList();
+        });
+    }
 
     // Sidebar Collapse / Expand
-    btnSidebarCollapse.addEventListener('click', () => {
-        sidebarEl.classList.add('collapsed');
-        btnSidebarExpand.style.display = 'flex';
-        isSidebarCollapsed = true;
-    });
+    if (btnSidebarCollapse) {
+        btnSidebarCollapse.addEventListener('click', () => {
+            sidebarEl.classList.add('collapsed');
+            if (btnSidebarExpand) btnSidebarExpand.style.display = 'flex';
+            isSidebarCollapsed = true;
+        });
+    }
 
-    btnSidebarExpand.addEventListener('click', () => {
-        sidebarEl.classList.remove('collapsed');
-        btnSidebarExpand.style.display = 'none';
-        isSidebarCollapsed = false;
-    });
+    if (btnSidebarExpand) {
+        btnSidebarExpand.addEventListener('click', () => {
+            sidebarEl.classList.remove('collapsed');
+            btnSidebarExpand.style.display = 'none';
+            isSidebarCollapsed = false;
+        });
+    }
 
     // Top HUD toggle button
-    btnToggleHudMode.addEventListener('click', () => {
-        if (currentNavMode === 'serverbox') {
-            switchNavMode('hosts', document.getElementById('nav-hosts'));
-        } else {
-            switchNavMode('serverbox', document.getElementById('nav-serverbox'));
-        }
-    });
+    if (btnToggleHudMode) {
+        btnToggleHudMode.addEventListener('click', () => {
+            if (currentNavMode === 'serverbox') {
+                switchNavMode('hosts', document.getElementById('nav-hosts'));
+            } else {
+                switchNavMode('serverbox', document.getElementById('nav-serverbox'));
+            }
+        });
+    }
 
-    btnCloseHud.addEventListener('click', () => {
-        switchNavMode('hosts', document.getElementById('nav-hosts'));
-    });
+    if (btnCloseHud) {
+        btnCloseHud.addEventListener('click', () => {
+            switchNavMode('hosts', document.getElementById('nav-hosts'));
+        });
+    }
 
     // Accessory Bar Toggle Button
     if (btnToggleAccessoryBar) {
@@ -599,65 +694,88 @@ function setupEventListeners() {
     }
 
     // New Tab Button
-    document.getElementById('btn-new-tab').addEventListener('click', () => {
-        openNewTab(hosts[0]);
-    });
+    const btnNewTab = document.getElementById('btn-new-tab');
+    if (btnNewTab) {
+        btnNewTab.addEventListener('click', () => {
+            openNewTab(hosts[0]);
+        });
+    }
 
     // Split View Toggle
-    btnSplitToggle.addEventListener('click', () => {
-        isSplit1x2 = !isSplit1x2;
-        if (isSplit1x2) {
-            pane2.classList.remove('hidden');
-            splitBtnText.textContent = "Split 1x1";
-            if (tabs.length === 1 && hosts.length > 1) {
-                openNewTab(hosts[1]);
+    if (btnSplitToggle) {
+        btnSplitToggle.addEventListener('click', () => {
+            isSplit1x2 = !isSplit1x2;
+            if (isSplit1x2) {
+                pane2.classList.remove('hidden');
+                splitBtnText.textContent = "Split 1x1";
+                if (tabs.length === 1 && hosts.length > 1) {
+                    openNewTab(hosts[1]);
+                }
+                renderSplitPane2();
+                recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Enabled 1x2 dual-pane split view', 0);
+            } else {
+                pane2.classList.add('hidden');
+                splitBtnText.textContent = "Split 1x2";
+                recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Switched back to 1x1 single pane view', 0);
             }
-            renderSplitPane2();
-            recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Enabled 1x2 dual-pane split view', 0);
-        } else {
-            pane2.classList.add('hidden');
-            splitBtnText.textContent = "Split 1x2";
-            recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Switched back to 1x1 single pane view', 0);
-        }
-    });
+        });
+    }
 
-    // Activity Log Listeners
-    logSearchInput.addEventListener('input', () => renderActivityLogsTable());
-    btnSyncRannLabs.addEventListener('click', syncLogsToRannLabs);
-    btnSyncRannLabsSidebar.addEventListener('click', syncLogsToRannLabs);
-    btnExportLogs.addEventListener('click', exportLogsToJson);
+    // Floating Action Button (FAB) -> Contextual Action
+    if (fabAddHost) {
+        fabAddHost.addEventListener('click', () => {
+            handleFabClick();
+        });
+    }
 
-    // Modal Add Host
-    const modalHost = document.getElementById('modal-add-host');
     const btnAddHostQuick = document.getElementById('btn-add-host-quick');
     if (btnAddHostQuick) {
-        btnAddHostQuick.addEventListener('click', () => modalHost.classList.remove('hidden'));
+        btnAddHostQuick.addEventListener('click', () => {
+            handleFabClick();
+        });
     }
-    document.getElementById('modal-close').addEventListener('click', () => modalHost.classList.add('hidden'));
-    document.getElementById('modal-btn-cancel').addEventListener('click', () => modalHost.classList.add('hidden'));
-    document.getElementById('modal-btn-save').addEventListener('click', saveNewHost);
 
-    // Modal Settings
-    btnOpenSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
-    btnWorkspaceSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
-    modalSettingsClose.addEventListener('click', () => modalSettings.classList.add('hidden'));
-    modalSettingsCancel.addEventListener('click', () => modalSettings.classList.add('hidden'));
-    modalSettingsSave.addEventListener('click', () => {
-        const updated = {
-            sidebarMode: settingSidebarMode.value,
-            enableHud: settingEnableHud.checked,
-            theme: settingTheme.value,
-            fontSize: parseInt(settingFontSize.value, 10) || 14,
-            showAccessoryBar: settingShowAccessoryBar ? settingShowAccessoryBar.checked : true,
-            rannlabsEndpoint: settingRannlabsEndpoint.value.trim() || DEFAULT_SETTINGS.rannlabsEndpoint,
-            rannlabsApiKey: settingRannlabsKey.value.trim(),
-            autoSync: settingAutoSync.checked,
-            logRetentionDays: parseInt(settingLogRetention.value, 10) || 30,
-            keepalive: settingKeepalive.checked
-        };
-        saveSettings(updated);
-        modalSettings.classList.add('hidden');
-    });
+    // Activity Log Listeners
+    if (logSearchInput) logSearchInput.addEventListener('input', () => renderActivityLogsTable());
+    if (btnSyncRannLabs) btnSyncRannLabs.addEventListener('click', syncLogsToRannLabs);
+    if (btnSyncRannLabsSidebar) btnSyncRannLabsSidebar.addEventListener('click', syncLogsToRannLabs);
+    if (btnExportLogs) btnExportLogs.addEventListener('click', exportLogsToJson);
+
+    // Host Modal
+    setupModal('modal-add-host', 'modal-close', 'modal-btn-cancel', 'modal-btn-save', saveNewHost);
+    
+    // Port Forward Modal
+    setupModal('modal-add-forward', 'modal-forward-close', 'modal-forward-cancel', 'modal-forward-save', saveNewTunnel);
+    
+    // Snippet Modal
+    setupModal('modal-add-snippet', 'modal-snippet-close', 'modal-snippet-cancel', 'modal-snippet-save', saveNewSnippet);
+    
+    // Key Modal
+    setupModal('modal-add-key', 'modal-key-close', 'modal-key-cancel', 'modal-key-save', saveNewKey);
+
+    // Settings Modal
+    if (btnOpenSettings) btnOpenSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
+    if (btnWorkspaceSettings) btnWorkspaceSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
+    if (modalSettingsClose) modalSettingsClose.addEventListener('click', () => modalSettings.classList.add('hidden'));
+    if (modalSettingsCancel) modalSettingsCancel.addEventListener('click', () => modalSettings.classList.add('hidden'));
+    if (modalSettingsSave) {
+        modalSettingsSave.addEventListener('click', () => {
+            const updated = {
+                sidebarMode: settingSidebarMode.value,
+                enableHud: settingEnableHud.checked,
+                theme: settingTheme.value,
+                fontSize: parseInt(settingFontSize.value, 10) || 14,
+                showAccessoryBar: settingShowAccessoryBar ? settingShowAccessoryBar.checked : true,
+                rannlabsEndpoint: settingRannlabsEndpoint.value.trim() || DEFAULT_SETTINGS.rannlabsEndpoint,
+                rannlabsApiKey: settingRannlabsKey.value.trim(),
+                autoSync: settingAutoSync.checked,
+                logRetentionDays: parseInt(settingLogRetention.value, 10) || 30,
+                keepalive: settingKeepalive.checked
+            };
+            saveSettings(updated);
+            modalSettings.classList.add('hidden');
+        });
+    }
 
     // Close tab dropdown if clicked outside
     document.addEventListener('click', (e) => {
@@ -667,30 +785,89 @@ function setupEventListeners() {
     });
 }
 
+function setupModal(modalId, closeBtnId, cancelBtnId, saveBtnId, saveCallback) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const closeBtn = document.getElementById(closeBtnId);
+    const cancelBtn = document.getElementById(cancelBtnId);
+    const saveBtn = document.getElementById(saveBtnId);
+
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    if (cancelBtn) cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+        saveCallback();
+        modal.classList.add('hidden');
+    });
+}
+
+function handleFabClick() {
+    if (currentNavMode === 'port_forwarding') {
+        updateForwardHostDropdown();
+        if (modalAddForward) modalAddForward.classList.remove('hidden');
+    } else if (currentNavMode === 'snippets') {
+        if (modalAddSnippet) modalAddSnippet.classList.remove('hidden');
+    } else if (currentNavMode === 'keys') {
+        if (modalAddKey) modalAddKey.classList.remove('hidden');
+    } else {
+        if (modalAddHost) modalAddHost.classList.remove('hidden');
+    }
+}
+
+function updateForwardHostDropdown() {
+    const sel = document.getElementById('forward-ssh-target');
+    if (!sel) return;
+    sel.innerHTML = '';
+    hosts.filter(h => h.authType !== 'LOCAL_PTY').forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.id;
+        opt.textContent = `${h.name} (${h.hostname})`;
+        sel.appendChild(opt);
+    });
+}
+
 function switchNavMode(mode, targetBtn) {
     currentNavMode = mode;
-    document.querySelectorAll('.nav-segment-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.drawer-nav-item').forEach(btn => btn.classList.remove('active'));
     if (targetBtn) targetBtn.classList.add('active');
 
+    // Update Section Title & View Visibilities
     if (mode === 'serverbox') {
-        sidebarTitleEl.textContent = "MONITOR HOSTS";
+        sidebarTitleEl.textContent = "MONITOR TARGETS";
         terminalWrapper.classList.add('hidden');
         activityLogsView.classList.add('hidden');
         serverboxHud.classList.remove('hidden');
         hudToggleText.textContent = "Terminal";
         updateHudView();
     } else if (mode === 'logs') {
-        sidebarTitleEl.textContent = "DAILY LOG ARCHIVE";
+        sidebarTitleEl.textContent = "DAILY AUDIT ARCHIVE";
         terminalWrapper.classList.add('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.remove('hidden');
         hudToggleText.textContent = "HUD";
         renderActivityLogsTable();
-    } else {
+    } else if (mode === 'port_forwarding') {
+        sidebarTitleEl.textContent = "PORT FORWARDING";
         terminalWrapper.classList.remove('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.add('hidden');
-        sidebarTitleEl.textContent = mode === 'hosts' ? "SAVED SESSIONS" : "SNIPPET LIBRARY";
+        hudToggleText.textContent = "HUD";
+    } else if (mode === 'keys') {
+        sidebarTitleEl.textContent = "KEYS & IDENTITIES";
+        terminalWrapper.classList.remove('hidden');
+        serverboxHud.classList.add('hidden');
+        activityLogsView.classList.add('hidden');
+        hudToggleText.textContent = "HUD";
+    } else if (mode === 'snippets') {
+        sidebarTitleEl.textContent = "SNIPPET SCRIPTS";
+        terminalWrapper.classList.remove('hidden');
+        serverboxHud.classList.add('hidden');
+        activityLogsView.classList.add('hidden');
+        hudToggleText.textContent = "HUD";
+    } else {
+        sidebarTitleEl.textContent = "SAVED HOSTS";
+        terminalWrapper.classList.remove('hidden');
+        serverboxHud.classList.add('hidden');
+        activityLogsView.classList.add('hidden');
         hudToggleText.textContent = "HUD";
     }
 
@@ -699,10 +876,13 @@ function switchNavMode(mode, targetBtn) {
 
 function renderSidebarList() {
     hostListEl.innerHTML = '';
+    const q = searchQuery;
 
     if (currentNavMode === 'hosts' || currentNavMode === 'serverbox') {
-        sidebarCounterEl.textContent = hosts.length;
-        hosts.forEach(host => {
+        const filtered = hosts.filter(h => !q || h.name.toLowerCase().includes(q) || h.hostname.toLowerCase().includes(q) || h.category.toLowerCase().includes(q));
+        sidebarCounterEl.textContent = filtered.length;
+        
+        filtered.forEach(host => {
             const item = document.createElement('div');
             item.className = 'host-item';
             
@@ -729,9 +909,39 @@ function renderSidebarList() {
 
             hostListEl.appendChild(item);
         });
+    } else if (currentNavMode === 'port_forwarding') {
+        const filtered = tunnels.filter(t => !q || t.label.toLowerCase().includes(q) || String(t.localPort).includes(q) || String(t.remotePort).includes(q));
+        sidebarCounterEl.textContent = filtered.length;
+
+        filtered.forEach(tunnel => {
+            const targetHost = hosts.find(h => h.id === tunnel.targetHostId) || hosts[1];
+            const item = document.createElement('div');
+            item.className = `tunnel-item ${tunnel.active ? 'active-tunnel' : ''}`;
+            
+            item.innerHTML = `
+                <div class="tunnel-header">
+                    <span class="tunnel-title">${escapeHtml(tunnel.label)}</span>
+                    <span class="host-tag ${tunnel.active ? 'tag-local' : 'tag-homelab'}">${tunnel.active ? 'ACTIVE' : 'OFF'}</span>
+                </div>
+                <div class="tunnel-route">${tunnel.localPort} &rarr; ${tunnel.remoteHost}:${tunnel.remotePort}</div>
+                <div class="tunnel-meta">Via ${escapeHtml(targetHost.name)}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                tunnel.active = !tunnel.active;
+                localStorage.setItem(STORAGE_KEYS.TUNNELS, JSON.stringify(tunnels));
+                renderSidebarList();
+                recordActivityLog('TUNNEL_TOGGLE', tunnel.label, `Port forward tunnel ${tunnel.localPort}->${tunnel.remotePort} set to ${tunnel.active ? 'ACTIVE' : 'OFF'}`, 0);
+                showToast(`Tunnel "${tunnel.label}" is now ${tunnel.active ? 'active' : 'stopped'}.`);
+            });
+
+            hostListEl.appendChild(item);
+        });
     } else if (currentNavMode === 'snippets') {
-        sidebarCounterEl.textContent = snippets.length;
-        snippets.forEach(snippet => {
+        const filtered = snippets.filter(s => !q || s.title.toLowerCase().includes(q) || s.command.toLowerCase().includes(q));
+        sidebarCounterEl.textContent = filtered.length;
+        
+        filtered.forEach(snippet => {
             const item = document.createElement('div');
             item.className = 'snippet-item';
             item.innerHTML = `
@@ -743,9 +953,32 @@ function renderSidebarList() {
 
             item.addEventListener('click', () => {
                 executeTerminalCommand(activeTabIndex, snippet.command);
-                if (currentNavMode !== 'hosts') {
-                    switchNavMode('hosts', document.getElementById('nav-hosts'));
+                showToast(`Executed snippet: ${snippet.title}`);
+            });
+
+            hostListEl.appendChild(item);
+        });
+    } else if (currentNavMode === 'keys') {
+        const filtered = keys.filter(k => !q || k.name.toLowerCase().includes(q) || k.algo.toLowerCase().includes(q) || k.fingerprint.toLowerCase().includes(q));
+        sidebarCounterEl.textContent = filtered.length;
+
+        filtered.forEach(k => {
+            const item = document.createElement('div');
+            item.className = 'key-item';
+            item.innerHTML = `
+                <div class="key-header">
+                    <span class="key-name-text">${escapeHtml(k.name)}</span>
+                    <span class="key-badge-algo">${k.algo}</span>
+                </div>
+                <div class="key-fingerprint">${escapeHtml(k.fingerprint)}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(`ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... ${k.name}@matepad12x`);
                 }
+                showToast(`Copied public key "${k.name}" to clipboard.`);
+                recordActivityLog('KEY_COPY', k.name, `Copied public key fingerprint ${k.fingerprint}`, 0);
             });
 
             hostListEl.appendChild(item);
@@ -770,7 +1003,7 @@ function renderSidebarList() {
 
             item.addEventListener('click', () => {
                 activeLogFilterDate = dateStr;
-                logDatePicker.value = dateStr;
+                if (logDatePicker) logDatePicker.value = dateStr;
                 renderSidebarList();
                 renderActivityLogsTable();
             });
@@ -992,7 +1225,6 @@ function setupInlineTextareas() {
     if (termInput1) {
         termInput1.addEventListener('input', () => autoExpand(termInput1));
         termInput1.addEventListener('keydown', (e) => handleKeydown(e, termInput1, activeTabIndex));
-        // Clicking anywhere in terminal screen focuses input
         if (termScreen1) {
             termScreen1.addEventListener('click', () => termInput1.focus());
         }
@@ -1057,7 +1289,6 @@ function executeTerminalCommand(tabIdx, cmd) {
         ? `<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>`
         : `<span class='ansi-cyan'>${targetTab.host.username}@${targetTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
 
-    // Handle multiline formatting if command spans multiple lines
     if (cmd.includes('\n')) {
         const lines = cmd.split('\n');
         lines.forEach((l, idx) => {
@@ -1071,7 +1302,6 @@ function executeTerminalCommand(tabIdx, cmd) {
         targetTab.history.push(`${promptLeader} <span class="ansi-bold">${escapeHtml(cmd)}</span>`);
     }
 
-    // Simulated responses
     const lower = cmd.toLowerCase().trim();
     if (lower === 'help') {
         targetTab.history.push("<span class='ansi-cyan'>MateTerminal-Box Built-in Commands:</span>");
@@ -1157,10 +1387,22 @@ function setupAccessoryKeys() {
                 input.value += '    ';
             } else if (key === 'UP') {
                 input.value = 'htop';
-            } else if (key === 'DOWN') {
+            } else if (key === 'DN') {
                 input.value = 'docker ps';
-            } else if (key === 'LEFT' || key === 'RIGHT') {
+            } else if (key === 'LT' || key === 'RT') {
                 input.focus();
+            } else if (key === 'PGUP') {
+                termScreen1.scrollTop -= 200;
+            } else if (key === 'PGDN') {
+                termScreen1.scrollTop += 200;
+            } else if (key === 'PASTE') {
+                input.value += 'curl -s https://api.rann-labs.com/health';
+                showToast('Pasted command buffer.');
+            } else if (key === 'CLEAR') {
+                const targetTab = tabs[activeTabIndex];
+                if (targetTab) targetTab.history = [];
+                renderActiveTerminal();
+                showToast('Cleared buffer.');
             } else {
                 if (isCtrlActive && key.toLowerCase() === 'c') {
                     executeTerminalCommand(activeTabIndex, '^C');
@@ -1205,7 +1447,6 @@ function startTelemetryEngine() {
         if (memBarEl) memBarEl.style.width = `${Math.round((mem/memTotal)*100)}%`;
         if (netValEl) netValEl.textContent = `RX: ${rx} MB/s | TX: ${tx} KB/s`;
 
-        // Update core bars
         const coreBars = document.querySelectorAll('.core-bar div');
         coreBars.forEach(bar => {
             bar.style.width = `${Math.floor(10 + Math.random() * 70)}%`;
@@ -1213,16 +1454,17 @@ function startTelemetryEngine() {
     }, 2500);
 }
 
+// Resource Creators
 function saveNewHost() {
-    const name = document.getElementById('input-host-name').value.trim() || "Remote Server";
-    const ip = document.getElementById('input-host-ip').value.trim() || "127.0.0.1";
-    const port = parseInt(document.getElementById('input-host-port').value, 10) || 22;
-    const user = document.getElementById('input-host-user').value.trim() || "root";
-    const category = document.getElementById('input-host-category').value;
+    const label = document.getElementById('host-label').value.trim() || "Remote Server";
+    const ip = document.getElementById('host-ip').value.trim() || "127.0.0.1";
+    const port = parseInt(document.getElementById('host-port').value, 10) || 22;
+    const user = document.getElementById('host-user').value.trim() || "ubuntu";
+    const category = document.getElementById('host-category').value;
 
     const newHost = {
         id: "host_" + Date.now(),
-        name: name,
+        name: label,
         hostname: ip,
         port: port,
         username: user,
@@ -1230,7 +1472,7 @@ function saveNewHost() {
         category: category,
         colorAccent: "#38bdf8",
         telemetry: {
-            os: "Linux 6.5.0-generic",
+            os: "Linux 6.8.0-generic",
             specs: `${ip}:${port}`,
             cores: 4,
             diskLabel: "/dev/sda1",
@@ -1242,11 +1484,84 @@ function saveNewHost() {
 
     hosts.push(newHost);
     localStorage.setItem(STORAGE_KEYS.HOSTS, JSON.stringify(hosts));
-    document.getElementById('modal-add-host').classList.add('hidden');
+    document.getElementById('badge-hosts-count').textContent = hosts.length;
     renderSidebarList();
     initHudTargetSelector();
-    recordActivityLog('HOST_CREATE', name, `Added host profile ${user}@${ip}:${port}`, 0);
-    showToast(`Saved host "${name}".`);
+    updateForwardHostDropdown();
+    recordActivityLog('HOST_CREATE', label, `Added host profile ${user}@${ip}:${port}`, 0);
+    showToast(`Saved host "${label}".`);
+}
+
+function saveNewTunnel() {
+    const label = document.getElementById('forward-label').value.trim() || "New Tunnel";
+    const localPort = parseInt(document.getElementById('forward-local-port').value, 10) || 8080;
+    const remotePort = parseInt(document.getElementById('forward-remote-port').value, 10) || 80;
+    const remoteHost = document.getElementById('forward-remote-host').value.trim() || "localhost";
+    const targetHostId = document.getElementById('forward-ssh-target').value;
+
+    const newTunnel = {
+        id: "tun_" + Date.now(),
+        label: label,
+        localPort: localPort,
+        remoteHost: remoteHost,
+        remotePort: remotePort,
+        targetHostId: targetHostId,
+        active: true
+    };
+
+    tunnels.push(newTunnel);
+    localStorage.setItem(STORAGE_KEYS.TUNNELS, JSON.stringify(tunnels));
+    renderSidebarList();
+    recordActivityLog('TUNNEL_CREATE', label, `Created port forwarding rule ${localPort} -> ${remoteHost}:${remotePort}`, 0);
+    showToast(`Created port forwarding tunnel "${label}".`);
+}
+
+function saveNewSnippet() {
+    const title = document.getElementById('snippet-title').value.trim() || "Custom Script";
+    const command = document.getElementById('snippet-command').value.trim() || "uptime";
+
+    const newSnippet = {
+        id: "snip_" + Date.now(),
+        title: title,
+        command: command
+    };
+
+    snippets.push(newSnippet);
+    localStorage.setItem(STORAGE_KEYS.SNIPPETS, JSON.stringify(snippets));
+    document.getElementById('badge-snippets-count').textContent = snippets.length;
+    renderSidebarList();
+    recordActivityLog('SNIPPET_CREATE', title, `Added terminal snippet: ${command}`, 0);
+    showToast(`Saved snippet "${title}".`);
+}
+
+function saveNewKey() {
+    const name = document.getElementById('key-name').value.trim() || "id_ed25519_custom";
+    const algo = document.getElementById('key-type').value;
+
+    const newKey = {
+        id: "key_" + Date.now(),
+        name: name,
+        algo: algo,
+        fingerprint: "SHA256:" + Array.from({length: 43}, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*62)]).join(''),
+        created: getTodayDateString()
+    };
+
+    keys.push(newKey);
+    localStorage.setItem(STORAGE_KEYS.KEYS, JSON.stringify(keys));
+    renderSidebarList();
+    recordActivityLog('KEY_GENERATE', name, `Generated ${algo} SSH keypair`, 0);
+    showToast(`Generated SSH keypair "${name}".`);
+}
+
+function showToast(message) {
+    if (!toastEl || !toastMessageEl) return;
+    toastMessageEl.textContent = message;
+    toastEl.classList.remove('hidden');
+    toastEl.classList.add('show');
+    clearTimeout(toastEl._timer);
+    toastEl._timer = setTimeout(() => {
+        toastEl.classList.remove('show');
+    }, 3000);
 }
 
 function escapeHtml(text) {

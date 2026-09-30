@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="tablet-frame" id="tablet-frame">
-        <!-- Tablet Top Bezel & Status Bar -->
+        <!-- Tablet Top Bezel & Status Bar (HarmonyOS 4.2 / Android 12) -->
         <header class="tablet-status-bar" id="tablet-status-bar">
             <div class="status-left">
                 <span class="device-pill">HUAWEI MatePad 12X (3:2 144Hz)</span>
@@ -16,7 +16,7 @@
                 <span class="sync-pill" id="global-sync-badge">Rann-Labs: Idle</span>
             </div>
             <div class="status-center">
-                <span class="app-branding">MateTerminal-Box (Termius Dark Edition)</span>
+                <span class="app-branding">MateTerminal-Box (Termius Midnight Pro)</span>
             </div>
             <div class="status-right">
                 <span class="indicator live-dot" id="live-indicator"></span>
@@ -27,7 +27,7 @@
 
         <!-- Main Tablet Canvas -->
         <main class="tablet-canvas">
-            <!-- Left Termius-Style Sidebar -->
+            <!-- Left Termius-Style Drawer / Sidebar -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="brand-logo">
@@ -39,7 +39,7 @@
                     </div>
                     <div class="brand-text">
                         <h3>MateTerminal</h3>
-                        <p>Termius &amp; ServerBox Core</p>
+                        <p>Termius Midnight Pro Engine</p>
                     </div>
                     <button class="icon-btn" id="btn-sidebar-collapse" title="Collapse Sidebar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -48,16 +48,67 @@
                     </button>
                 </div>
 
-                <!-- Termius Navigation Tabs (Segmented Control) -->
-                <nav class="nav-segmented">
-                    <button class="nav-segment-btn active" data-mode="hosts" id="nav-hosts">Hosts</button>
-                    <button class="nav-segment-btn" data-mode="serverbox" id="nav-serverbox">HUD</button>
-                    <button class="nav-segment-btn" data-mode="snippets" id="nav-snippets">Snippets</button>
-                    <button class="nav-segment-btn" data-mode="logs" id="nav-logs">Logs</button>
+                <!-- Termius Navigation Groups (Authentic Termius Drawer Layout) -->
+                <nav class="nav-termius-drawer" id="nav-drawer">
+                    <button class="drawer-nav-item active" data-mode="hosts" id="nav-hosts">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                        <span>Hosts</span>
+                        <span class="drawer-badge" id="badge-hosts-count">3</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="serverbox" id="nav-serverbox">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                        </svg>
+                        <span>ServerBox HUD</span>
+                        <span class="drawer-badge badge-hud">LIVE</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="port_forwarding" id="nav-tunnels">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Port Forwarding</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="snippets" id="nav-snippets">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        <span>Snippets</span>
+                        <span class="drawer-badge" id="badge-snippets-count">6</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="keys" id="nav-keys">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                        </svg>
+                        <span>Keys &amp; Identities</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="logs" id="nav-logs">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span>Activity Logs</span>
+                        <span class="drawer-badge badge-sync" id="badge-logs-sync">SYNC</span>
+                    </button>
                 </nav>
 
+                <!-- Saved Sessions List Section -->
                 <div class="sidebar-section-title">
-                    <span id="sidebar-title">SAVED SESSIONS</span>
+                    <span id="sidebar-title">SAVED HOSTS</span>
                     <div class="sidebar-title-actions">
                         <span class="counter-badge" id="sidebar-counter">3</span>
                         <button class="icon-btn-tiny" id="btn-add-host-quick" title="Add Host">
@@ -67,6 +118,15 @@
                             </svg>
                         </button>
                     </div>
+                </div>
+
+                <!-- Sidebar Search Filter Input (Termius Search) -->
+                <div class="sidebar-search-box">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="sidebar-search-input" placeholder="Search..." autocomplete="off">
                 </div>
 
                 <!-- Dynamic Item List Container -->
@@ -102,7 +162,7 @@
 
             <!-- Right Termius Workspace -->
             <section class="workspace" id="workspace">
-                <!-- Termius Top Tab Bar -->
+                <!-- Termius Top Tab Bar / Action Header -->
                 <div class="top-tab-bar">
                     <!-- Expand Sidebar Toggle -->
                     <button class="sidebar-toggle-btn" id="btn-sidebar-expand" title="Open Sidebar">
@@ -255,6 +315,12 @@
                             <div class="hud-header-right">
                                 <span class="badge-live" id="hud-status-badge">LOCAL SHELL</span>
                                 <span class="badge-arch">aarch64</span>
+                                <button class="btn-close-hud" id="btn-close-hud" title="Close HUD">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
 
@@ -369,6 +435,7 @@
                                 <p>Structured session history and commands partitioned by day with Rann-Labs server synchronization.</p>
                             </div>
                             <div class="logs-toolbar">
+                                <input type="date" class="date-input" id="log-date-picker">
                                 <input type="text" class="search-input" id="log-search-input" placeholder="Search commands, hosts, events...">
                                 <button class="btn-sync" id="btn-sync-rannlabs">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -394,10 +461,16 @@
                                         <th>SYNC STATUS</th>
                                     </tr>
                                 </thead>
-                                <tbody id="activity-logs-tbody">
+                                <tbody id="logs-table-body">
                                     <!-- Populated dynamically via app.js -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="logs-footer-stats">
+                            <span id="log-count-total">Total: 0 entries</span>
+                            <span id="log-count-synced">Synced: 0</span>
+                            <span id="log-count-pending">Pending: 0</span>
                         </div>
                     </div>
                 </div>
@@ -418,8 +491,18 @@
                     <button class="key-btn" data-key="DN">&#x2193;</button>
                     <button class="key-btn" data-key="LT">&#x2190;</button>
                     <button class="key-btn" data-key="RT">&#x2192;</button>
+                    <button class="key-btn" data-key="PGUP">PGUP</button>
+                    <button class="key-btn" data-key="PGDN">PGDN</button>
                     <button class="key-btn" data-key="PASTE">PASTE</button>
+                    <button class="key-btn" data-key="CLEAR">CLEAR</button>
                 </div>
+                <!-- Termius Floating Action Button (FAB) -->
+                <button class="termius-fab" id="fab-add-host" title="Add Host / New Connection">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
             </section>
         </main>
     </div>
@@ -464,6 +547,106 @@
             <div class="modal-footer">
                 <button class="btn-secondary" id="modal-btn-cancel">Cancel</button>
                 <button class="btn-primary" id="modal-btn-save">Save Host</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Port Forward Modal Dialog -->
+    <div class="modal-overlay hidden" id="modal-add-forward">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Port Forwarding Rule</h3>
+                <button class="icon-btn" id="modal-forward-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="forward-label">Rule Label</label>
+                    <input type="text" id="forward-label" placeholder="e.g. Web App Local Tunnel">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="forward-local-port">Local Port</label>
+                        <input type="number" id="forward-local-port" value="8080">
+                    </div>
+                    <div class="form-group">
+                        <label for="forward-remote-port">Remote Port</label>
+                        <input type="number" id="forward-remote-port" value="80">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="forward-remote-host">Destination Host</label>
+                        <input type="text" id="forward-remote-host" value="localhost">
+                    </div>
+                    <div class="form-group">
+                        <label for="forward-ssh-target">Through SSH Host</label>
+                        <select id="forward-ssh-target">
+                            <!-- populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-forward-cancel">Cancel</button>
+                <button class="btn-primary" id="modal-forward-save">Create Tunnel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Snippet Modal Dialog -->
+    <div class="modal-overlay hidden" id="modal-add-snippet">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Terminal Snippet</h3>
+                <button class="icon-btn" id="modal-snippet-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="snippet-title">Snippet Title</label>
+                    <input type="text" id="snippet-title" placeholder="e.g. Quick Health Check">
+                </div>
+                <div class="form-group">
+                    <label for="snippet-command">Command / Script</label>
+                    <textarea id="snippet-command" rows="3" class="form-textarea" placeholder="curl -s https://api.rann-labs.com/health | jq ."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-snippet-cancel">Cancel</button>
+                <button class="btn-primary" id="modal-snippet-save">Save Snippet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Key Modal Dialog -->
+    <div class="modal-overlay hidden" id="modal-add-key">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generate or Import SSH Key</h3>
+                <button class="icon-btn" id="modal-key-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="key-name">Key Label</label>
+                    <input type="text" id="key-name" placeholder="e.g. matepad_ed25519_2026">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="key-type">Key Algorithm</label>
+                        <select id="key-type">
+                            <option value="ED25519">ED25519 (Recommended / Fast)</option>
+                            <option value="RSA-4096">RSA (4096-bit)</option>
+                            <option value="ECDSA-521">ECDSA (NIST P-521)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="key-passphrase">Passphrase (Optional)</label>
+                        <input type="password" id="key-passphrase" placeholder="Empty for passwordless">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-key-cancel">Cancel</button>
+                <button class="btn-primary" id="modal-key-save">Generate Keypair</button>
             </div>
         </div>
     </div>
@@ -521,6 +704,10 @@
                     <input type="checkbox" id="setting-auto-sync" checked>
                     <label for="setting-auto-sync">Auto Sync Daily Logs on Connect</label>
                 </div>
+                <div class="form-group">
+                    <label for="setting-log-retention">Log Retention Period (Days)</label>
+                    <input type="number" id="setting-log-retention" value="30">
+                </div>
                 <div class="form-group form-group-checkbox">
                     <input type="checkbox" id="setting-keepalive" checked>
                     <label for="setting-keepalive">Enable Background Keepalive Service</label>
@@ -531,6 +718,12 @@
                 <button class="btn-primary" id="modal-settings-save">Save Settings</button>
             </div>
         </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div class="toast-notify hidden" id="toast-notify">
+        <span class="toast-indicator"></span>
+        <span id="toast-message">Action completed</span>
     </div>
 
     <script src="app.js"></script>

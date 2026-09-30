@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark Modern Theme Palette -->
-    <color name="bg_primary">#0f172a</color>
-    <color name="bg_secondary">#1e293b</color>
-    <color name="bg_card">#1e293b</color>
-    <color name="bg_terminal">#0a0e17</color>
-    <color name="bg_sidebar">#090d16</color>
+    <!-- Termius Dark Modern Palette -->
+    <color name="bg_primary">#0e111a</color>
+    <color name="bg_secondary">#161922</color>
+    <color name="bg_card">#1c202d</color>
+    <color name="bg_terminal">#090b10</color>
+    <color name="bg_sidebar">#141720</color>
     
-    <!-- Cyber Neon Accents -->
-    <color name="accent_cyan">#06b6d4</color>
+    <!-- Termius Brand Accents -->
+    <color name="accent_termius">#7952ff</color>
+    <color name="accent_cyan">#00d8d6</color>
     <color name="accent_blue">#38bdf8</color>
-    <color name="accent_emerald">#10b981</color>
-    <color name="accent_amber">#f59e0b</color>
-    <color name="accent_rose">#f43f5e</color>
-    <color name="accent_purple">#8b5cf6</color>
+    <color name="accent_emerald">#00e676</color>
+    <color name="accent_amber">#ffb142</color>
+    <color name="accent_rose">#ff5252</color>
+    <color name="accent_purple">#7952ff</color>
 
     <!-- Text & Borders -->
-    <color name="text_primary">#f8fafc</color>
-    <color name="text_secondary">#94a3b8</color>
-    <color name="text_muted">#64748b</color>
-    <color name="border_color">#334155</color>
-    <color name="border_focus">#0ea5e9</color>
+    <color name="text_primary">#f0f6fc</color>
+    <color name="text_secondary">#8b949e</color>
+    <color name="text_muted">#586069</color>
+    <color name="border_color">#262b3a</color>
+    <color name="border_focus">#7952ff</color>
 </resources>

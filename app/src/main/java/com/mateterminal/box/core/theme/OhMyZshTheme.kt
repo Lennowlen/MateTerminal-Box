@@ -15,6 +15,11 @@ enum class TerminalTheme(
     val cyan: String,
     val white: String
 ) {
+    TERMIUS_DARK(
+        "termius_dark", "Termius Dark (Default)",
+        "#090b10", "#f0f6fc", "#7952ff",
+        "#141720", "#ff5252", "#00e676", "#ffb142", "#38bdf8", "#7952ff", "#00d8d6", "#ffffff"
+    ),
     TOKYO_NIGHT(
         "tokyo_night", "Tokyo Night",
         "#1a1b26", "#c0caf5", "#7aa2f7",
@@ -29,11 +34,6 @@ enum class TerminalTheme(
         "catppuccin", "Catppuccin Mocha",
         "#1e1e2e", "#cdd6f4", "#f5e0dc",
         "#45475a", "#f38ba8", "#a6e3a1", "#f9e2af", "#89b4fa", "#cba6f7", "#94e2d5", "#bac2de"
-    ),
-    CYBER_NIGHT(
-        "cyber_night", "Cyber Slate (MatePad 12X)",
-        "#0f172a", "#f8fafc", "#38bdf8",
-        "#1e293b", "#f43f5e", "#10b981", "#f59e0b", "#0284c7", "#8b5cf6", "#06b6d4", "#f1f5f9"
     )
 }
 

@@ -15,7 +15,7 @@ const STORAGE_KEYS = {
 const DEFAULT_SETTINGS = {
     sidebarMode: 'COLLAPSIBLE', // 'COLLAPSIBLE' | 'FIXED' | 'AUTO_HIDE'
     enableHud: true,
-    theme: 'TOKYO_NIGHT', // 'TOKYO_NIGHT' | 'MONOKAI_PRO' | 'CYBER_SLATE' | 'SOLARIZED_DARK'
+    theme: 'TERMIUS_DARK', // 'TERMIUS_DARK' | 'TOKYO_NIGHT' | 'MONOKAI_PRO' | 'CYBER_SLATE' | 'SOLARIZED_DARK'
     fontSize: 14,
     showAccessoryBar: true,
     rannlabsEndpoint: 'https://api.rann-labs.com/v1/logs/sync',
@@ -260,7 +260,6 @@ function applySettingsToUI() {
     } else if (settings.theme === 'SOLARIZED_DARK') {
         document.body.classList.add('theme-solarized');
     }
-
     // 2. Font Size
     document.documentElement.style.setProperty('--term-font-size', `${settings.fontSize}px`);
 
@@ -1117,27 +1116,65 @@ function executeTerminalCommand(tabIdx, cmd) {
     if (isSplit1x2) renderSplitPane2();
 }
 
+let isCtrlActive = false;
+let isAltActive = false;
+
 function setupAccessoryKeys() {
+    const btnCtrl = document.querySelector('.key-btn[data-key="CTRL"]');
+    const btnAlt = document.querySelector('.key-btn[data-key="ALT"]');
+
     document.querySelectorAll('.key-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.key;
             const input = termInput1;
+            
+            if (key === 'CTRL') {
+                isCtrlActive = !isCtrlActive;
+                btn.classList.toggle('active', isCtrlActive);
+                input.focus();
+                return;
+            }
+            
+            if (key === 'ALT') {
+                isAltActive = !isAltActive;
+                btn.classList.toggle('active', isAltActive);
+                input.focus();
+                return;
+            }
+
             if (key === 'ESC') {
                 input.value = '';
                 input.style.height = 'auto';
+                if (isCtrlActive) {
+                    isCtrlActive = false;
+                    if (btnCtrl) btnCtrl.classList.remove('active');
+                }
+                if (isAltActive) {
+                    isAltActive = false;
+                    if (btnAlt) btnAlt.classList.remove('active');
+                }
             } else if (key === 'TAB') {
                 input.value += '    ';
-            } else if (key === 'CTRL') {
-                executeTerminalCommand(activeTabIndex, '^C');
             } else if (key === 'UP') {
                 input.value = 'htop';
             } else if (key === 'DOWN') {
                 input.value = 'docker ps';
             } else if (key === 'LEFT' || key === 'RIGHT') {
-                // Focus input and move cursor
                 input.focus();
             } else {
-                input.value += key;
+                if (isCtrlActive && key.toLowerCase() === 'c') {
+                    executeTerminalCommand(activeTabIndex, '^C');
+                    isCtrlActive = false;
+                    if (btnCtrl) btnCtrl.classList.remove('active');
+                } else if (isCtrlActive && key.toLowerCase() === 'l') {
+                    const targetTab = tabs[activeTabIndex];
+                    if (targetTab) targetTab.history = [];
+                    renderActiveTerminal();
+                    isCtrlActive = false;
+                    if (btnCtrl) btnCtrl.classList.remove('active');
+                } else {
+                    input.value += key;
+                }
             }
             input.focus();
         });

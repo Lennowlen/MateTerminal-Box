@@ -1,3 +1,60 @@
+/* Official Termius Extracted Fonts */
+@font-face {
+    font-family: 'Termius JetBrains Mono NF';
+    src: url('fonts/JetBrains-Mono-Regular-Nerd-Font-Complete-Mono.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius Fira Code NF';
+    src: url('fonts/Fira-Code-Regular-Nerd-Font-Complete-Mono.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius Cascadia Code PL';
+    src: url('fonts/CascadiaCodePL.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius MesloLGS NF';
+    src: url('fonts/MesloLGS-NF-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius Source Code Pro';
+    src: url('fonts/SourceCodePro-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius Ubuntu Mono';
+    src: url('fonts/UbuntuMono-R.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius DejaVu Sans Mono';
+    src: url('fonts/DejaVuSansMono.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Termius Operator Mono';
+    src: url('fonts/OperatorMono-Book.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* ==========================================================================
    MateTerminal-Box: Authentic Termius Midnight Pro Theme & UI/UX Design System
    Designed specifically for Huawei MatePad 12X (3:2 Aspect Ratio, 2800x1840)
@@ -40,7 +97,7 @@
     --key-text: #e2e8f0;
 
     /* Fonts & Metric Dimensions */
-    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Menlo, monospace;
+    --font-mono: 'Termius JetBrains Mono NF', 'Termius Cascadia Code PL', 'Termius Fira Code NF', 'JetBrains Mono', monospace;
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --term-font-size: 14px;
 }
@@ -907,6 +964,23 @@ body {
     animation: termiusCursorBlink 1s infinite;
     vertical-align: middle;
     margin-left: 2px;
+}
+
+.term-cursor.cursor-bar {
+    width: 2px;
+    height: 16px;
+}
+
+.term-cursor.cursor-underline {
+    width: 8px;
+    height: 2px;
+    vertical-align: bottom;
+    margin-bottom: 2px;
+}
+
+.term-cursor.cursor-steady {
+    animation: none;
+    opacity: 1;
 }
 
 @keyframes termiusCursorBlink {

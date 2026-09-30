@@ -15,10 +15,31 @@ const STORAGE_KEYS = {
 };
 
 // Default Settings
+const TERMIUS_SCHEMES = {
+    "Termius Dark": { bg: "#141729", fg: "#21b568", cursor: "#21b568", ui: "#8d91a5", header: "#292a3d", card: "#25263a", sidebar: "#151629", accent: "#7952ff" },
+    "Pro": { bg: "#000000", fg: "#f2f2f2", cursor: "#4d4d4d", ui: "#9d9d9d", header: "#1f1f1f", card: "#181818", sidebar: "#121212", accent: "#7952ff" },
+    "Dracula": { bg: "#282a36", fg: "#f8f8f2", cursor: "#bbbbbb", ui: "#7d8197", header: "#343746", card: "#2e3140", sidebar: "#21222c", accent: "#bd93f9" },
+    "Nord Dark": { bg: "#2e3440", fg: "#d8dee9", cursor: "#eceff4", ui: "#808a9e", header: "#3b4252", card: "#353c4a", sidebar: "#242933", accent: "#88c0d0" },
+    "Ayu Dark": { bg: "#0f1419", fg: "#e6e1cf", cursor: "#f29718", ui: "#5c6773", header: "#1c2128", card: "#151a21", sidebar: "#0b0f14", accent: "#e6b450" },
+    "Catppuccin Mocha": { bg: "#1e1e2e", fg: "#cdd6f4", cursor: "#f5e0dc", ui: "#9399b2", header: "#313244", card: "#272839", sidebar: "#181825", accent: "#cba6f7" },
+    "Cyberpunk": { bg: "#332a57", fg: "#e5e5e5", cursor: "#21f6bc", ui: "#8070a0", header: "#3f346d", card: "#382e61", sidebar: "#251e40", accent: "#ff0055" },
+    "Monokai": { bg: "#272822", fg: "#f8f8f2", cursor: "#f8f8f0", ui: "#75715e", header: "#35362e", card: "#30312b", sidebar: "#1e1f1c", accent: "#a6e22e" },
+    "Solarized Dark": { bg: "#002b36", fg: "#839496", cursor: "#93a1a1", ui: "#586e75", header: "#073642", card: "#05303c", sidebar: "#00212b", accent: "#268bd2" },
+    "Tokyo Night": { bg: "#1a1b26", fg: "#c0caf5", cursor: "#c0caf5", ui: "#565f89", header: "#24283b", card: "#1f2335", sidebar: "#16161e", accent: "#7aa2f7" },
+    "Gruvbox Dark": { bg: "#282828", fg: "#ebdbb2", cursor: "#ebdbb2", ui: "#928374", header: "#3c3836", card: "#32302f", sidebar: "#1d2021", accent: "#fabd2f" },
+    "Kanagawa Wave": { bg: "#1f1f28", fg: "#dcd7ba", cursor: "#c8c093", ui: "#727169", header: "#2a2a37", card: "#252532", sidebar: "#16161d", accent: "#7e9cd8" },
+    "Material Dark": { bg: "#263238", fg: "#eeffff", cursor: "#ffcc00", ui: "#546e7a", header: "#37474f", card: "#2e3c43", sidebar: "#1e272c", accent: "#80cbc4" },
+    "Everforest Dark": { bg: "#282e32", fg: "#d3c6aa", cursor: "#d3c6aa", ui: "#7a8478", header: "#343c41", card: "#2f363b", sidebar: "#202528", accent: "#a7c080" },
+    "Night Owl": { bg: "#011627", fg: "#d6deeb", cursor: "#7e57c2", ui: "#5f7e97", header: "#0b253a", card: "#061d31", sidebar: "#00101d", accent: "#c792ea" },
+    "Rose Pine": { bg: "#191724", fg: "#e0def4", cursor: "#56526e", ui: "#6e6a86", header: "#26233a", card: "#211f33", sidebar: "#13121d", accent: "#ebbcba" }
+};
+
 const DEFAULT_SETTINGS = {
     sidebarMode: 'COLLAPSIBLE', // 'COLLAPSIBLE' | 'FIXED' | 'AUTO_HIDE'
     enableHud: true,
-    theme: 'TERMIUS_DARK', // 'TERMIUS_DARK' | 'TOKYO_NIGHT' | 'MONOKAI_PRO' | 'CYBER_SLATE' | 'SOLARIZED_DARK'
+    theme: 'Termius Dark',
+    fontFamily: "'Termius JetBrains Mono NF', monospace",
+    cursorStyle: 'BLOCK_BLINK',
     fontSize: 14,
     showAccessoryBar: true,
     rannlabsEndpoint: 'https://api.rann-labs.com/v1/logs/sync',
@@ -245,6 +266,8 @@ const modalSettingsSave = document.getElementById('modal-settings-save');
 const settingSidebarMode = document.getElementById('setting-sidebar-mode');
 const settingEnableHud = document.getElementById('setting-enable-hud');
 const settingTheme = document.getElementById('setting-theme');
+const settingFontFamily = document.getElementById('setting-font-family');
+const settingCursorStyle = document.getElementById('setting-cursor-style');
 const settingFontSize = document.getElementById('setting-font-size');
 const settingShowAccessoryBar = document.getElementById('setting-show-accessory-bar');
 const settingRannlabsEndpoint = document.getElementById('setting-rannlabs-endpoint');
@@ -322,18 +345,34 @@ function saveSettings(newSettings) {
 }
 
 function applySettingsToUI() {
-    // 1. Theme
-    document.body.classList.remove('theme-monokai', 'theme-cyber-slate', 'theme-solarized');
-    if (settings.theme === 'MONOKAI_PRO') {
-        document.body.classList.add('theme-monokai');
-    } else if (settings.theme === 'CYBER_SLATE') {
-        document.body.classList.add('theme-cyber-slate');
-    } else if (settings.theme === 'SOLARIZED_DARK') {
-        document.body.classList.add('theme-solarized');
+    // 1. Official Termius Color Scheme Application
+    const scheme = TERMIUS_SCHEMES[settings.theme] || TERMIUS_SCHEMES["Termius Dark"];
+    if (scheme) {
+        document.documentElement.style.setProperty('--termius-terminal-bg', scheme.bg);
+        document.documentElement.style.setProperty('--termius-sidebar-bg', scheme.sidebar);
+        document.documentElement.style.setProperty('--termius-main-bg', scheme.bg === '#000000' ? '#0a0a0a' : '#1b1c2e');
+        document.documentElement.style.setProperty('--termius-header-bg', scheme.header);
+        document.documentElement.style.setProperty('--termius-card-bg', scheme.card);
+        document.documentElement.style.setProperty('--accent-purple', scheme.accent);
     }
-    // 2. Font Size
+
+    // 2. Nerd Font Family & Font Size
+    const chosenFont = settings.fontFamily || "'Termius JetBrains Mono NF', monospace";
+    document.documentElement.style.setProperty('--font-mono', chosenFont);
     document.documentElement.style.setProperty('--term-font-size', `${settings.fontSize}px`);
 
+    // 3. Cursor Style & Blink
+    const cursorEls = document.querySelectorAll('.term-cursor');
+    cursorEls.forEach(cursorEl => {
+        cursorEl.className = 'term-cursor';
+        if (settings.cursorStyle === 'BAR_BLINK') {
+            cursorEl.classList.add('cursor-bar');
+        } else if (settings.cursorStyle === 'UNDERLINE_BLINK') {
+            cursorEl.classList.add('cursor-underline');
+        } else if (settings.cursorStyle === 'BLOCK_STEADY') {
+            cursorEl.classList.add('cursor-steady');
+        }
+    });
     // 3. Sidebar Mode
     if (settings.sidebarMode === 'FIXED') {
         sidebarEl.classList.remove('collapsed');
@@ -384,7 +423,9 @@ function applySettingsToUI() {
     // Populate Settings Modal Inputs
     settingSidebarMode.value = settings.sidebarMode;
     settingEnableHud.checked = settings.enableHud;
-    settingTheme.value = settings.theme;
+    settingTheme.value = settings.theme || "Termius Dark";
+    if (settingFontFamily) settingFontFamily.value = settings.fontFamily || "'Termius JetBrains Mono NF', monospace";
+    if (settingCursorStyle) settingCursorStyle.value = settings.cursorStyle || "BLOCK_BLINK";
     settingFontSize.value = String(settings.fontSize);
     if (settingShowAccessoryBar) settingShowAccessoryBar.checked = settings.showAccessoryBar;
     settingRannlabsEndpoint.value = settings.rannlabsEndpoint;
@@ -764,6 +805,8 @@ function setupEventListeners() {
                 sidebarMode: settingSidebarMode.value,
                 enableHud: settingEnableHud.checked,
                 theme: settingTheme.value,
+                fontFamily: settingFontFamily ? settingFontFamily.value : "'Termius JetBrains Mono NF', monospace",
+                cursorStyle: settingCursorStyle ? settingCursorStyle.value : "BLOCK_BLINK",
                 fontSize: parseInt(settingFontSize.value, 10) || 14,
                 showAccessoryBar: settingShowAccessoryBar ? settingShowAccessoryBar.checked : true,
                 rannlabsEndpoint: settingRannlabsEndpoint.value.trim() || DEFAULT_SETTINGS.rannlabsEndpoint,

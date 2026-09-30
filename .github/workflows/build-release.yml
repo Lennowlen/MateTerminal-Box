@@ -1,0 +1,84 @@
+name: MateTerminal-Box Release CI/CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version Tag (e.g. v1.3.0)'
+        required: true
+        default: 'v1.3.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build APKs & Publish GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Set up Android SDK & NDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 9477386
+          api-level: 34
+          build-tools-version: 34.0.0
+          ndk-version: 26.1.10909125
+
+      - name: Make Gradle Executable
+        run: chmod +x gradlew
+
+      - name: Build Android Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Package Offline Web Workstation Simulator
+        run: |
+          mkdir -p release-dist
+          zip -r release-dist/mate-terminal-box-web-simulator.zip web/ docs/ -x "*.git*"
+
+      - name: Collect Build Artifacts
+        run: |
+          mkdir -p release-dist
+          if [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            cp app/build/outputs/apk/release/app-release-unsigned.apk release-dist/mate-terminal-box-universal.apk
+          elif [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk release-dist/mate-terminal-box-universal.apk
+          fi
+
+      - name: Extract Tag & Version
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.version_tag }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release & Upload Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: "MateTerminal-Box ${{ env.TAG_NAME }}"
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          files: |
+            release-dist/mate-terminal-box-universal.apk
+            release-dist/mate-terminal-box-web-simulator.zip
+            docs/screenshots/*

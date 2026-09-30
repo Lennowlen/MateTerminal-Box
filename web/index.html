@@ -112,8 +112,39 @@
                         </svg>
                     </button>
 
+                    <!-- Tab Scroll Left Button -->
+                    <button class="tab-nav-btn" id="btn-tab-scroll-left" title="Scroll Tabs Left">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+
                     <div class="tabs-scroll" id="tabs-container">
                         <!-- Dynamic Terminal Tabs -->
+                    </div>
+
+                    <!-- Tab Scroll Right Button -->
+                    <button class="tab-nav-btn" id="btn-tab-scroll-right" title="Scroll Tabs Right">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+
+                    <!-- Tab Overview Dropdown Switcher Button -->
+                    <div class="tab-dropdown-wrap">
+                        <button class="action-btn action-btn-icon" id="btn-tab-dropdown-toggle" title="View All Tabs (Dropdown List)">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </button>
+                        <div class="tab-dropdown-menu hidden" id="tab-dropdown-menu">
+                            <!-- Populated dynamically via app.js -->
+                        </div>
                     </div>
 
                     <div class="workspace-actions">
@@ -139,6 +170,18 @@
                             </svg>
                             <span id="hud-toggle-text">HUD</span>
                         </button>
+                        <button class="action-btn action-btn-icon" id="btn-toggle-accessory-bar" title="Toggle Accessory Key Bar (ESC/TAB/CTRL)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                                <line x1="6" y1="8" x2="6.01" y2="8"></line>
+                                <line x1="10" y1="8" x2="10.01" y2="8"></line>
+                                <line x1="14" y1="8" x2="14.01" y2="8"></line>
+                                <line x1="18" y1="8" x2="18.01" y2="8"></line>
+                                <line x1="6" y1="12" x2="6.01" y2="12"></line>
+                                <line x1="18" y1="12" x2="18.01" y2="12"></line>
+                                <line x1="7" y1="16" x2="17" y2="16"></line>
+                            </svg>
+                        </button>
                         <button class="action-btn action-btn-icon" id="btn-workspace-settings" title="Open Settings">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="3"></circle>
@@ -149,49 +192,73 @@
                 </div>
 
                 <!-- Main View Container -->
+                <!-- Main View Container -->
                 <div class="view-container">
                     <!-- Split Terminal Panes (1x1 or 1x2) -->
                     <div class="terminal-panes-wrapper" id="terminal-wrapper">
                         <!-- Primary Pane -->
                         <div class="terminal-pane pane-primary" id="pane-1">
                             <div class="pane-header">
-                                <span class="pane-title" id="pane-1-title">localhost [Local PTY]</span>
-                                <span class="pane-tag">TTY 1</span>
+                                <div class="pane-header-left">
+                                    <span class="pane-title" id="pane-1-title">localhost [Local PTY]</span>
+                                    <span class="pane-tag">TTY 1</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <span class="multiline-hint">Shift+Enter or \ for multiline</span>
+                                </div>
                             </div>
-                            <div class="terminal-screen" id="term-screen-1">
-                                <!-- ANSI Oh-My-Zsh rendered here -->
-                            </div>
-                            <div class="terminal-input-row">
-                                <span class="term-prompt" id="prompt-1">&#x279c; ~ &#x276f;</span>
-                                <input type="text" id="term-input-1" class="term-input" placeholder="Type command (e.g. htop, status, sync, help)..." autocomplete="off" spellcheck="false" />
+                            <!-- True Terminal Buffer with Inline Prompt & Caret -->
+                            <div class="terminal-screen" id="term-screen-1" tabindex="0">
+                                <div class="terminal-history" id="term-history-1"></div>
+                                <div class="terminal-inline-input-line" id="term-line-1">
+                                    <span class="term-prompt" id="prompt-1">&#x279c; ~ &#x276f;</span>
+                                    <div class="term-input-wrapper">
+                                        <textarea id="term-input-1" class="term-inline-textarea" rows="1" autocomplete="off" spellcheck="false" placeholder="Type command (Shift+Enter for multiline, \ for continuation)..."></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Secondary Pane (Split 1x2) -->
                         <div class="terminal-pane pane-secondary hidden" id="pane-2">
                             <div class="pane-header">
-                                <span class="pane-title" id="pane-2-title">Production VPS [SSH]</span>
-                                <span class="pane-tag">TTY 2</span>
+                                <div class="pane-header-left">
+                                    <span class="pane-title" id="pane-2-title">Production VPS [SSH]</span>
+                                    <span class="pane-tag">TTY 2</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <span class="multiline-hint">Shift+Enter for multiline</span>
+                                </div>
                             </div>
-                            <div class="terminal-screen" id="term-screen-2">
-                                <!-- ANSI Oh-My-Zsh rendered here -->
-                            </div>
-                            <div class="terminal-input-row">
-                                <span class="term-prompt" id="prompt-2">ubuntu@cloud ~ &#x276f;</span>
-                                <input type="text" id="term-input-2" class="term-input" placeholder="Type command for split pane..." autocomplete="off" spellcheck="false" />
+                            <!-- True Terminal Buffer with Inline Prompt & Caret -->
+                            <div class="terminal-screen" id="term-screen-2" tabindex="0">
+                                <div class="terminal-history" id="term-history-2"></div>
+                                <div class="terminal-inline-input-line" id="term-line-2">
+                                    <span class="term-prompt" id="prompt-2">ubuntu@cloud ~ &#x276f;</span>
+                                    <div class="term-input-wrapper">
+                                        <textarea id="term-input-2" class="term-inline-textarea" rows="1" autocomplete="off" spellcheck="false" placeholder="Type command in split pane..."></textarea>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
                     <!-- ServerBox Live Telemetry HUD View (Optional & Toggleable) -->
                     <div class="serverbox-hud hidden" id="serverbox-hud">
                         <div class="hud-header">
-                            <div>
-                                <h2 id="hud-host-name">Production VPS (Singapore)</h2>
-                                <p id="hud-host-meta">Linux 6.5.0-35-generic | 103.145.22.45:22 | Uptime: 48d 14h</p>
+                            <div class="hud-header-left">
+                                <div class="hud-target-switcher">
+                                    <span class="hud-target-label">Target:</span>
+                                    <select id="hud-target-selector" class="hud-select">
+                                        <option value="local">Local MatePad 12X (Kirin 9000W / 12GB)</option>
+                                        <option value="demo_vps">Remote: Production VPS (Singapore)</option>
+                                        <option value="homelab_pi">Remote: HomeLab Raspberry Pi 5</option>
+                                    </select>
+                                </div>
+                                <h2 id="hud-host-name">Local MatePad 12X (Device Hardware)</h2>
+                                <p id="hud-host-meta">HarmonyOS 4.2 / Android 12 Linux 5.10.160-aarch64 | 12GB LPDDR5 | 2800x1840 144Hz</p>
                             </div>
                             <div class="hud-header-right">
-                                <span class="hud-badge-online">ONLINE</span>
+                                <span class="hud-badge-online" id="hud-status-badge">ONLINE</span>
                                 <button class="btn-sm btn-secondary" id="btn-close-hud">Close HUD</button>
                             </div>
                         </div>
@@ -481,6 +548,17 @@
                             <option value="16">16px (Comfortable)</option>
                             <option value="18">18px (Large)</option>
                         </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-text">
+                            <strong>Virtual Accessory Key Bar</strong>
+                            <p>Show on-screen ESC, TAB, CTRL, ALT, and arrow keys (hide if using physical Smart Keyboard).</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="setting-show-accessory-bar" checked>
+                            <span class="slider round"></span>
+                        </label>
                     </div>
                 </div>
 

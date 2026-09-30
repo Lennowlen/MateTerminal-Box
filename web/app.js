@@ -1,7 +1,7 @@
 /**
  * MateTerminal-Box Web Simulator
  * Huawei MatePad 12X Pro Edition
- * Strict Rule: No emojis anywhere in code, prompts, UI, or logs.
+ * Strict Rule: Zero emojis anywhere in code, prompts, UI, or logs.
  */
 
 // Storage Keys
@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
     enableHud: true,
     theme: 'TOKYO_NIGHT', // 'TOKYO_NIGHT' | 'MONOKAI_PRO' | 'CYBER_SLATE' | 'SOLARIZED_DARK'
     fontSize: 14,
+    showAccessoryBar: true,
     rannlabsEndpoint: 'https://api.rann-labs.com/v1/logs/sync',
     rannlabsApiKey: '',
     autoSync: true,
@@ -34,7 +35,16 @@ const DEFAULT_HOSTS = [
         username: "u0_a210",
         authType: "LOCAL_PTY",
         category: "Local",
-        colorAccent: "#10b981"
+        colorAccent: "#10b981",
+        telemetry: {
+            os: "HarmonyOS 4.2 / Android 12 Linux 5.10.160-aarch64",
+            specs: "12GB LPDDR5 | 2800x1840 144Hz | Wi-Fi 6+",
+            cores: 8,
+            diskLabel: "/data (Internal UFS 3.1)",
+            diskUsed: 42,
+            diskTotal: 256,
+            dockerEnabled: false
+        }
     },
     {
         id: "demo_vps",
@@ -44,7 +54,16 @@ const DEFAULT_HOSTS = [
         username: "ubuntu",
         authType: "PASSWORD",
         category: "Cloud",
-        colorAccent: "#38bdf8"
+        colorAccent: "#38bdf8",
+        telemetry: {
+            os: "Ubuntu 24.04 LTS (Linux 6.8.0-31-generic)",
+            specs: "AMD EPYC 7763 (4 vCPU) | 8GB RAM | 1Gbps Uplink",
+            cores: 4,
+            diskLabel: "/dev/nvme0n1p1 (Root)",
+            diskUsed: 38,
+            diskTotal: 100,
+            dockerEnabled: true
+        }
     },
     {
         id: "homelab_pi",
@@ -54,7 +73,16 @@ const DEFAULT_HOSTS = [
         username: "pi",
         authType: "PASSWORD",
         category: "HomeLab",
-        colorAccent: "#f59e0b"
+        colorAccent: "#f59e0b",
+        telemetry: {
+            os: "Debian GNU/Linux 12 (bookworm) 6.6.20+rpt-rpi-2712",
+            specs: "Broadcom BCM2712 Quad Cortex-A76 | 8GB LPDDR4X",
+            cores: 4,
+            diskLabel: "/dev/sda1 (NVMe SSD)",
+            diskUsed: 78,
+            diskTotal: 500,
+            dockerEnabled: true
+        }
     }
 ];
 
@@ -78,6 +106,7 @@ let activeTabIndex = 0;
 let isSplit1x2 = false;
 let isSidebarCollapsed = false;
 let activeLogFilterDate = getTodayDateString();
+let activeHudHostId = 'local_device';
 
 // Tabs & Session State
 let tabs = [
@@ -86,8 +115,9 @@ let tabs = [
         host: hosts[0],
         history: [
             "<span class='ansi-cyan ansi-bold'>MateTerminal-Box [Huawei MatePad 12X Local PTY Subshell]</span>",
-            "<span class='ansi-green'>Device: 12.0\" 2800x1840 | 144Hz Refresh | HarmonyOS Subsystem</span>",
-            "<span class='ansi-purple'>Type 'help', 'status', 'htop', 'uname -a', 'docker ps', 'sync', or 'clear'</span><br>"
+            "<span class='ansi-green'>Display: 12.0\" 2800x1840 | 144Hz Refresh | HarmonyOS Subsystem</span>",
+            "<span class='ansi-purple'>Powerline Agonster Prompt Active | Zero Emojis Standard</span>",
+            "<span class='ansi-blue'>Type 'help', 'status', 'htop', 'uname -a', 'docker ps', 'sync', or 'clear'</span><br>"
         ]
     }
 ];
@@ -98,12 +128,23 @@ const hostListEl = document.getElementById('host-list');
 const sidebarTitleEl = document.getElementById('sidebar-title');
 const sidebarCounterEl = document.getElementById('sidebar-counter');
 const tabsContainerEl = document.getElementById('tabs-container');
+const btnTabScrollLeft = document.getElementById('btn-tab-scroll-left');
+const btnTabScrollRight = document.getElementById('btn-tab-scroll-right');
+const btnTabDropdownToggle = document.getElementById('btn-tab-dropdown-toggle');
+const tabDropdownMenu = document.getElementById('tab-dropdown-menu');
+
 const termScreen1 = document.getElementById('term-screen-1');
 const termScreen2 = document.getElementById('term-screen-2');
+const termHistory1 = document.getElementById('term-history-1');
+const termHistory2 = document.getElementById('term-history-2');
 const termInput1 = document.getElementById('term-input-1');
 const termInput2 = document.getElementById('term-input-2');
 const terminalWrapper = document.getElementById('terminal-wrapper');
+const accessoryBar = document.getElementById('accessory-bar');
+const btnToggleAccessoryBar = document.getElementById('btn-toggle-accessory-bar');
+
 const serverboxHud = document.getElementById('serverbox-hud');
+const hudTargetSelector = document.getElementById('hud-target-selector');
 const activityLogsView = document.getElementById('activity-logs-view');
 const clockEl = document.getElementById('clock');
 const btnSplitToggle = document.getElementById('btn-split-toggle');
@@ -141,6 +182,7 @@ const settingSidebarMode = document.getElementById('setting-sidebar-mode');
 const settingEnableHud = document.getElementById('setting-enable-hud');
 const settingTheme = document.getElementById('setting-theme');
 const settingFontSize = document.getElementById('setting-font-size');
+const settingShowAccessoryBar = document.getElementById('setting-show-accessory-bar');
 const settingRannlabsEndpoint = document.getElementById('setting-rannlabs-endpoint');
 const settingRannlabsKey = document.getElementById('setting-rannlabs-key');
 const settingAutoSync = document.getElementById('setting-auto-sync');
@@ -152,15 +194,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initClock();
     applySettingsToUI();
     initActivityLogsDate();
+    initHudTargetSelector();
     renderSidebarList();
     renderTabs();
     renderActiveTerminal();
     setupEventListeners();
     setupAccessoryKeys();
+    setupTabNavigation();
+    setupInlineTextareas();
     startTelemetryEngine();
 
-    // Log initial app launch event
-    recordActivityLog('SESSION_OPEN', 'MatePad-12X', 'Session started on local PTY shell', 0);
+    // Initial launch activity log
+    recordActivityLog('SESSION_OPEN', 'MatePad-12X', 'Session started on local PTY shell (3:2 2800x1840 display)', 0);
 });
 
 // Helper: Date string YYYY-MM-DD
@@ -233,16 +278,29 @@ function applySettingsToUI() {
     // 4. ServerBox HUD Button Visibility
     if (settings.enableHud) {
         btnToggleHudMode.style.display = 'flex';
-        document.getElementById('nav-serverbox').style.display = 'block';
+        const navHud = document.getElementById('nav-serverbox');
+        if (navHud) navHud.style.display = 'block';
     } else {
         btnToggleHudMode.style.display = 'none';
-        document.getElementById('nav-serverbox').style.display = 'none';
+        const navHud = document.getElementById('nav-serverbox');
+        if (navHud) navHud.style.display = 'none';
         if (currentNavMode === 'serverbox') {
             switchNavMode('hosts', document.getElementById('nav-hosts'));
         }
     }
 
-    // 5. Keepalive status
+    // 5. Virtual Accessory Key Bar Visibility
+    if (accessoryBar) {
+        if (settings.showAccessoryBar) {
+            accessoryBar.classList.remove('hidden');
+            btnToggleAccessoryBar.classList.add('active');
+        } else {
+            accessoryBar.classList.add('hidden');
+            btnToggleAccessoryBar.classList.remove('active');
+        }
+    }
+
+    // 6. Keepalive status
     const keepaliveLabel = document.getElementById('keepalive-label');
     const liveIndicator = document.getElementById('live-indicator');
     if (settings.keepalive) {
@@ -258,6 +316,7 @@ function applySettingsToUI() {
     settingEnableHud.checked = settings.enableHud;
     settingTheme.value = settings.theme;
     settingFontSize.value = String(settings.fontSize);
+    if (settingShowAccessoryBar) settingShowAccessoryBar.checked = settings.showAccessoryBar;
     settingRannlabsEndpoint.value = settings.rannlabsEndpoint;
     settingRannlabsKey.value = settings.rannlabsApiKey;
     settingAutoSync.checked = settings.autoSync;
@@ -286,7 +345,6 @@ function loadActivityLogs() {
         console.error('Failed to load activity logs', e);
     }
 
-    // Seed initial daily logs
     const today = getTodayDateString();
     const yesterday = getTodayDateString(new Date(Date.now() - 86400000));
 
@@ -369,7 +427,6 @@ function recordActivityLog(eventType, hostTarget, commandText, durationMs = 0) {
     activityLogs.unshift(newEntry);
     localStorage.setItem(STORAGE_KEYS.ACTIVITY_LOGS, JSON.stringify(activityLogs));
 
-    // If active view is logs, refresh table
     if (currentNavMode === 'logs') {
         renderActivityLogsTable();
     }
@@ -495,7 +552,8 @@ function showToast(message) {
 function setupEventListeners() {
     // Nav segments
     document.getElementById('nav-hosts').addEventListener('click', (e) => switchNavMode('hosts', e.currentTarget));
-    document.getElementById('nav-serverbox').addEventListener('click', (e) => switchNavMode('serverbox', e.currentTarget));
+    const navHud = document.getElementById('nav-serverbox');
+    if (navHud) navHud.addEventListener('click', (e) => switchNavMode('serverbox', e.currentTarget));
     document.getElementById('nav-snippets').addEventListener('click', (e) => switchNavMode('snippets', e.currentTarget));
     document.getElementById('nav-logs').addEventListener('click', (e) => switchNavMode('logs', e.currentTarget));
 
@@ -525,6 +583,22 @@ function setupEventListeners() {
         switchNavMode('hosts', document.getElementById('nav-hosts'));
     });
 
+    // Accessory Bar Toggle Button
+    if (btnToggleAccessoryBar) {
+        btnToggleAccessoryBar.addEventListener('click', () => {
+            const nextState = accessoryBar.classList.contains('hidden');
+            if (nextState) {
+                accessoryBar.classList.remove('hidden');
+                btnToggleAccessoryBar.classList.add('active');
+            } else {
+                accessoryBar.classList.add('hidden');
+                btnToggleAccessoryBar.classList.remove('active');
+            }
+            settings.showAccessoryBar = nextState;
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+        });
+    }
+
     // New Tab Button
     document.getElementById('btn-new-tab').addEventListener('click', () => {
         openNewTab(hosts[0]);
@@ -545,25 +619,6 @@ function setupEventListeners() {
             pane2.classList.add('hidden');
             splitBtnText.textContent = "Split 1x2";
             recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Switched back to 1x1 single pane view', 0);
-        }
-    });
-
-    // Terminal 1 Input
-    termInput1.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const cmd = termInput1.value.trim();
-            executeTerminalCommand(activeTabIndex, cmd);
-            termInput1.value = '';
-        }
-    });
-
-    // Terminal 2 Input
-    termInput2.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const cmd = termInput2.value.trim();
-            const secondIndex = (activeTabIndex + 1) % tabs.length;
-            executeTerminalCommand(secondIndex, cmd);
-            termInput2.value = '';
         }
     });
 
@@ -594,6 +649,7 @@ function setupEventListeners() {
             enableHud: settingEnableHud.checked,
             theme: settingTheme.value,
             fontSize: parseInt(settingFontSize.value, 10) || 14,
+            showAccessoryBar: settingShowAccessoryBar ? settingShowAccessoryBar.checked : true,
             rannlabsEndpoint: settingRannlabsEndpoint.value.trim() || DEFAULT_SETTINGS.rannlabsEndpoint,
             rannlabsApiKey: settingRannlabsKey.value.trim(),
             autoSync: settingAutoSync.checked,
@@ -602,6 +658,13 @@ function setupEventListeners() {
         };
         saveSettings(updated);
         modalSettings.classList.add('hidden');
+    });
+
+    // Close tab dropdown if clicked outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.tab-dropdown-wrap')) {
+            if (tabDropdownMenu) tabDropdownMenu.classList.add('hidden');
+        }
     });
 }
 
@@ -616,6 +679,7 @@ function switchNavMode(mode, targetBtn) {
         activityLogsView.classList.add('hidden');
         serverboxHud.classList.remove('hidden');
         hudToggleText.textContent = "Terminal";
+        updateHudView();
     } else if (mode === 'logs') {
         sidebarTitleEl.textContent = "DAILY LOG ARCHIVE";
         terminalWrapper.classList.add('hidden');
@@ -655,7 +719,10 @@ function renderSidebarList() {
 
             item.addEventListener('click', () => {
                 if (currentNavMode === 'serverbox') {
-                    selectHostForMonitoring(host);
+                    activeHudHostId = host.id;
+                    if (hudTargetSelector) hudTargetSelector.value = host.id;
+                    updateHudView();
+                    recordActivityLog('HUD_INSPECT', host.name, `Inspected live telemetry dashboard for ${host.hostname}`, 0);
                 } else {
                     openNewTab(host);
                 }
@@ -685,7 +752,6 @@ function renderSidebarList() {
             hostListEl.appendChild(item);
         });
     } else if (currentNavMode === 'logs') {
-        // Render unique dates in activity logs
         const uniqueDates = Array.from(new Set(activityLogs.map(l => l.logDate))).sort().reverse();
         sidebarCounterEl.textContent = uniqueDates.length;
 
@@ -715,10 +781,115 @@ function renderSidebarList() {
     }
 }
 
-function selectHostForMonitoring(host) {
-    document.getElementById('hud-host-name').textContent = host.name;
-    document.getElementById('hud-host-meta').textContent = `Linux 6.5.0-generic | ${host.hostname}:${host.port || 22} | Uptime: 48d 14h`;
-    recordActivityLog('HUD_INSPECT', host.name, `Inspected live telemetry dashboard for ${host.hostname}`, 0);
+// HUD Target Management
+function initHudTargetSelector() {
+    if (!hudTargetSelector) return;
+    hudTargetSelector.innerHTML = '';
+    hosts.forEach(host => {
+        const opt = document.createElement('option');
+        opt.value = host.id;
+        opt.textContent = host.authType === 'LOCAL_PTY' 
+            ? `Local Device: ${host.name}` 
+            : `Remote Server: ${host.name} (${host.hostname})`;
+        hudTargetSelector.appendChild(opt);
+    });
+
+    hudTargetSelector.addEventListener('change', (e) => {
+        activeHudHostId = e.target.value;
+        updateHudView();
+    });
+}
+
+function updateHudView() {
+    const host = hosts.find(h => h.id === activeHudHostId) || hosts[0];
+    const hudHostName = document.getElementById('hud-host-name');
+    const hudHostMeta = document.getElementById('hud-host-meta');
+    const hudStatusBadge = document.getElementById('hud-status-badge');
+
+    if (hudHostName) hudHostName.textContent = host.name;
+    if (hudHostMeta) {
+        hudHostMeta.textContent = `${host.telemetry ? host.telemetry.os : 'Linux Kernel'} | ${host.telemetry ? host.telemetry.specs : host.hostname} | Uptime: 14d 8h`;
+    }
+
+    if (hudStatusBadge) {
+        hudStatusBadge.textContent = host.authType === 'LOCAL_PTY' ? 'LOCAL SHELL' : 'SSH CONNECTED';
+    }
+
+    // Toggle docker table visibility based on host
+    const dockerSection = document.querySelector('.hud-sub-section');
+    if (dockerSection) {
+        if (host.telemetry && host.telemetry.dockerEnabled) {
+            dockerSection.style.display = 'block';
+        } else {
+            dockerSection.style.display = 'none';
+        }
+    }
+}
+
+// Tab Navigation & Overflow Management
+function setupTabNavigation() {
+    if (btnTabScrollLeft) {
+        btnTabScrollLeft.addEventListener('click', () => {
+            tabsContainerEl.scrollBy({ left: -160, behavior: 'smooth' });
+        });
+    }
+
+    if (btnTabScrollRight) {
+        btnTabScrollRight.addEventListener('click', () => {
+            tabsContainerEl.scrollBy({ left: 160, behavior: 'smooth' });
+        });
+    }
+
+    // Support mouse horizontal wheel scrolling on tabs bar
+    if (tabsContainerEl) {
+        tabsContainerEl.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                tabsContainerEl.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+
+    // Tab Dropdown Overview
+    if (btnTabDropdownToggle) {
+        btnTabDropdownToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            renderTabDropdownMenu();
+            tabDropdownMenu.classList.toggle('hidden');
+        });
+    }
+}
+
+function renderTabDropdownMenu() {
+    if (!tabDropdownMenu) return;
+    tabDropdownMenu.innerHTML = '';
+    
+    tabs.forEach((tab, index) => {
+        const item = document.createElement('button');
+        item.className = `tab-dropdown-item ${index === activeTabIndex ? 'active' : ''}`;
+        item.innerHTML = `
+            <span class="tab-dropdown-title">${index + 1}. ${escapeHtml(tab.host.name)}</span>
+            <span class="tab-dropdown-badge">${tab.host.authType}</span>
+        `;
+
+        item.addEventListener('click', () => {
+            activeTabIndex = index;
+            renderTabs();
+            renderActiveTerminal();
+            if (isSplit1x2) renderSplitPane2();
+            tabDropdownMenu.classList.add('hidden');
+            scrollToActiveTab();
+        });
+
+        tabDropdownMenu.appendChild(item);
+    });
+}
+
+function scrollToActiveTab() {
+    const activeTabEl = tabsContainerEl.children[activeTabIndex];
+    if (activeTabEl) {
+        activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
 }
 
 function openNewTab(host) {
@@ -735,6 +906,7 @@ function openNewTab(host) {
     renderTabs();
     renderActiveTerminal();
     if (isSplit1x2) renderSplitPane2();
+    scrollToActiveTab();
 
     recordActivityLog('SSH_CONNECT', host.name, `Connected to ${host.username}@${host.hostname}:${host.port || 22}`, 140);
 }
@@ -759,6 +931,7 @@ function renderTabs() {
                 renderTabs();
                 renderActiveTerminal();
                 if (isSplit1x2) renderSplitPane2();
+                scrollToActiveTab();
             }
         });
 
@@ -776,8 +949,66 @@ function closeTab(index) {
     renderTabs();
     renderActiveTerminal();
     if (isSplit1x2) renderSplitPane2();
+    scrollToActiveTab();
 
     recordActivityLog('SESSION_CLOSE', closedTab.host.name, `Closed terminal session tab ${closedTab.id}`, 0);
+}
+
+// Inline Terminal Buffer & Multiline Handling
+function setupInlineTextareas() {
+    function autoExpand(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px';
+    }
+
+    function handleKeydown(e, textarea, tabIdx) {
+        if (e.key === 'Enter') {
+            if (e.shiftKey) {
+                // Multiline continuation with Shift+Enter
+                return;
+            }
+            
+            const rawVal = textarea.value;
+            const trimmed = rawVal.trim();
+
+            // Support line continuation if command ends with '\'
+            if (rawVal.endsWith('\\\n') || rawVal.endsWith('\\')) {
+                return;
+            }
+
+            if (trimmed.length > 0) {
+                e.preventDefault();
+                executeTerminalCommand(tabIdx, trimmed);
+                textarea.value = '';
+                textarea.style.height = 'auto';
+            } else {
+                e.preventDefault();
+                executeTerminalCommand(tabIdx, '');
+                textarea.value = '';
+                textarea.style.height = 'auto';
+            }
+        }
+    }
+
+    if (termInput1) {
+        termInput1.addEventListener('input', () => autoExpand(termInput1));
+        termInput1.addEventListener('keydown', (e) => handleKeydown(e, termInput1, activeTabIndex));
+        // Clicking anywhere in terminal screen focuses input
+        if (termScreen1) {
+            termScreen1.addEventListener('click', () => termInput1.focus());
+        }
+    }
+
+    if (termInput2) {
+        termInput2.addEventListener('input', () => autoExpand(termInput2));
+        termInput2.addEventListener('keydown', (e) => {
+            const secondIndex = (activeTabIndex + 1) % tabs.length;
+            handleKeydown(e, termInput2, secondIndex);
+        });
+        if (termScreen2) {
+            termScreen2.addEventListener('click', () => termInput2.focus());
+        }
+    }
 }
 
 function renderActiveTerminal() {
@@ -789,8 +1020,15 @@ function renderActiveTerminal() {
         ? "<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>"
         : `<span class='ansi-cyan'>${currentTab.host.username}@${currentTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
 
-    termScreen1.innerHTML = currentTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
-    termScreen1.scrollTop = termScreen1.scrollHeight;
+    if (termHistory1) {
+        termHistory1.innerHTML = currentTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
+    }
+    if (termScreen1) {
+        termScreen1.scrollTop = termScreen1.scrollHeight;
+    }
+    if (termInput1) {
+        termInput1.focus();
+    }
 }
 
 function renderSplitPane2() {
@@ -799,10 +1037,16 @@ function renderSplitPane2() {
     const secondTab = tabs[secondIndex];
 
     document.getElementById('pane-2-title').textContent = `${secondTab.host.name} [${secondTab.host.authType}]`;
-    document.getElementById('prompt-2').innerHTML = `<span class='ansi-cyan'>${secondTab.host.username}@${secondTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
+    document.getElementById('prompt-2').innerHTML = secondTab.host.authType === 'LOCAL_PTY'
+        ? "<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>"
+        : `<span class='ansi-cyan'>${secondTab.host.username}@${secondTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
 
-    termScreen2.innerHTML = secondTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
-    termScreen2.scrollTop = termScreen2.scrollHeight;
+    if (termHistory2) {
+        termHistory2.innerHTML = secondTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
+    }
+    if (termScreen2) {
+        termScreen2.scrollTop = termScreen2.scrollHeight;
+    }
 }
 
 function executeTerminalCommand(tabIdx, cmd) {
@@ -810,11 +1054,23 @@ function executeTerminalCommand(tabIdx, cmd) {
     if (!targetTab) return;
 
     const startTime = performance.now();
-    const promptText = targetTab.host.authType === 'LOCAL_PTY'
-        ? `&#x279c; ~ &#x276f; ${escapeHtml(cmd)}`
-        : `${targetTab.host.username}@${targetTab.host.hostname} ~ &#x276f; ${escapeHtml(cmd)}`;
+    const promptLeader = targetTab.host.authType === 'LOCAL_PTY'
+        ? `<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>`
+        : `<span class='ansi-cyan'>${targetTab.host.username}@${targetTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
 
-    targetTab.history.push(`<span class="ansi-bold">${promptText}</span>`);
+    // Handle multiline formatting if command spans multiple lines
+    if (cmd.includes('\n')) {
+        const lines = cmd.split('\n');
+        lines.forEach((l, idx) => {
+            if (idx === 0) {
+                targetTab.history.push(`${promptLeader} <span class="ansi-bold">${escapeHtml(l)}</span>`);
+            } else {
+                targetTab.history.push(`<span class='ansi-purple'>&gt;</span> <span class="ansi-bold">${escapeHtml(l)}</span>`);
+            }
+        });
+    } else {
+        targetTab.history.push(`${promptLeader} <span class="ansi-bold">${escapeHtml(cmd)}</span>`);
+    }
 
     // Simulated responses
     const lower = cmd.toLowerCase().trim();
@@ -832,7 +1088,11 @@ function executeTerminalCommand(tabIdx, cmd) {
         syncLogsToRannLabs();
         targetTab.history.push("<span class='ansi-green'>Triggered synchronization to Rann-Labs API endpoint.</span>");
     } else if (lower === 'uname -a') {
-        targetTab.history.push("Linux MatePad-12X 6.5.0-35-generic #36-Ubuntu SMP PREEMPT_DYNAMIC aarch64 GNU/Linux");
+        if (targetTab.host.authType === 'LOCAL_PTY') {
+            targetTab.history.push("Linux MatePad-12X 5.10.160-android12-9-g89ef2 #1 SMP PREEMPT aarch64 GNU/Linux (HarmonyOS)");
+        } else {
+            targetTab.history.push("Linux ubuntu-singapore-node 6.8.0-31-generic #31-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux");
+        }
     } else if (lower === 'htop') {
         targetTab.history.push("<span class='ansi-green'>[||||||||||||||||||||                  24.5%]</span> Tasks: 142, 4 running");
         targetTab.history.push("<span class='ansi-cyan'>Mem[|||||||||||||||||||         3.8G/8.0G]</span> Swp[||| 120M/4.0G]");
@@ -844,7 +1104,7 @@ function executeTerminalCommand(tabIdx, cmd) {
         targetTab.history.push("Filesystem      Size  Used Avail Use% Mounted on");
         targetTab.history.push("/dev/nvme0n1p1  100G   38G   62G  38% /");
         targetTab.history.push("/dev/nvme0n1p2  450G  180G  270G  40% /data");
-    } else if (lower.length > 0) {
+    } else if (cmd.length > 0) {
         targetTab.history.push(`Executed: ${escapeHtml(cmd)} (exit code: 0)`);
     }
 
@@ -864,6 +1124,7 @@ function setupAccessoryKeys() {
             const input = termInput1;
             if (key === 'ESC') {
                 input.value = '';
+                input.style.height = 'auto';
             } else if (key === 'TAB') {
                 input.value += '    ';
             } else if (key === 'CTRL') {
@@ -872,6 +1133,9 @@ function setupAccessoryKeys() {
                 input.value = 'htop';
             } else if (key === 'DOWN') {
                 input.value = 'docker ps';
+            } else if (key === 'LEFT' || key === 'RIGHT') {
+                // Focus input and move cursor
+                input.focus();
             } else {
                 input.value += key;
             }
@@ -883,8 +1147,12 @@ function setupAccessoryKeys() {
 // ServerBox Telemetry Polling Loop Simulation
 function startTelemetryEngine() {
     setInterval(() => {
-        const cpu = (20 + Math.random() * 15).toFixed(1);
-        const mem = (3.6 + Math.random() * 0.4).toFixed(1);
+        const host = hosts.find(h => h.id === activeHudHostId) || hosts[0];
+        const isLocal = host.authType === 'LOCAL_PTY';
+
+        const cpu = (isLocal ? 14 + Math.random() * 12 : 22 + Math.random() * 25).toFixed(1);
+        const mem = (isLocal ? (4.2 + Math.random() * 0.3) : (3.6 + Math.random() * 0.4)).toFixed(1);
+        const memTotal = isLocal ? 12.0 : 8.0;
         const rx = (1.2 + Math.random() * 0.8).toFixed(1);
         const tx = Math.floor(200 + Math.random() * 250);
 
@@ -896,8 +1164,8 @@ function startTelemetryEngine() {
 
         if (cpuValEl) cpuValEl.textContent = `${cpu}%`;
         if (cpuBarEl) cpuBarEl.style.width = `${cpu}%`;
-        if (memValEl) memValEl.textContent = `${mem} GB / 8.0 GB (${Math.round((mem/8.0)*100)}%)`;
-        if (memBarEl) memBarEl.style.width = `${Math.round((mem/8.0)*100)}%`;
+        if (memValEl) memValEl.textContent = `${mem} GB / ${memTotal.toFixed(1)} GB (${Math.round((mem/memTotal)*100)}%)`;
+        if (memBarEl) memBarEl.style.width = `${Math.round((mem/memTotal)*100)}%`;
         if (netValEl) netValEl.textContent = `RX: ${rx} MB/s | TX: ${tx} KB/s`;
 
         // Update core bars
@@ -923,13 +1191,23 @@ function saveNewHost() {
         username: user,
         authType: "PASSWORD",
         category: category,
-        colorAccent: "#38bdf8"
+        colorAccent: "#38bdf8",
+        telemetry: {
+            os: "Linux 6.5.0-generic",
+            specs: `${ip}:${port}`,
+            cores: 4,
+            diskLabel: "/dev/sda1",
+            diskUsed: 20,
+            diskTotal: 100,
+            dockerEnabled: true
+        }
     };
 
     hosts.push(newHost);
     localStorage.setItem(STORAGE_KEYS.HOSTS, JSON.stringify(hosts));
     document.getElementById('modal-add-host').classList.add('hidden');
     renderSidebarList();
+    initHudTargetSelector();
     recordActivityLog('HOST_CREATE', name, `Added host profile ${user}@${ip}:${port}`, 0);
     showToast(`Saved host "${name}".`);
 }

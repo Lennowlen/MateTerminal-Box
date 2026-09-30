@@ -30,15 +30,15 @@ class SSHClientManager(private val host: HostModel) {
         onError: ((Exception) -> Unit)? = null
     ) = withContext(Dispatchers.IO) {
         try {
-            if (host.passwordOrKey.isNotBlank() && host.passwordOrKey.contains("BEGIN PRIVATE KEY")) {
-                jsch.addIdentity("custom_key", host.passwordOrKey.toByteArray(), null, null)
+            val hostSecret = host.passwordOrKey
+            if (hostSecret.isNotBlank() && hostSecret.contains("BEGIN PRIVATE KEY")) {
+                jsch.addIdentity("custom_key", hostSecret.toByteArray(), null, null)
             }
 
             session = jsch.getSession(host.username, host.hostname, host.port).apply {
-                if (host.passwordOrKey.isNotBlank() && !host.passwordOrKey.contains("BEGIN PRIVATE KEY")) {
-                    setPassword(host.passwordOrKey)
+                if (hostSecret.isNotBlank() && !hostSecret.contains("BEGIN PRIVATE KEY")) {
+                    setPassword(hostSecret)
                 }
-
                 val config = Properties().apply {
                     put("StrictHostKeyChecking", "no")
                     put("PreferredAuthentications", "publickey,keyboard-interactive,password")

@@ -1,0 +1,28 @@
+{
+  "name": "Ayu Light",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#ff3333",
+    "#319900",
+    "#f29718",
+    "#41a6d9",
+    "#e07ead",
+    "#1dd1b0",
+    "#dfdddd",
+    "#323232",
+    "#ff5959",
+    "#b8e532",
+    "#ffc94a",
+    "#73d8ff",
+    "#ffa3aa",
+    "#7ff1cb",
+    "#ffffff"
+  ],
+  "backgroundColor": "#fafafa",
+  "cursorColor": "#ff6a00",
+  "foregroundColor": "#5c6773",
+  "selectionColor": "#5c677380",
+  "app": {
+    "terminalUIColor": "#A1A1A1"
+  }
+}

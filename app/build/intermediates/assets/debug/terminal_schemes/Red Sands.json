@@ -1,0 +1,28 @@
+{
+  "name": "Red Sands",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#d30e0e",
+    "#58aa47",
+    "#ffa673",
+    "#0072ff",
+    "#ff57ee",
+    "#3bcbea",
+    "#e6e6e6",
+    "#606060",
+    "#e0692f",
+    "#b2ffa2",
+    "#ffc27b",
+    "#0193fc",
+    "#ffbce2",
+    "#70e4ff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#7a251e",
+  "cursorColor": "#ffffff",
+  "foregroundColor": "#d7c9a7",
+  "selectionColor": "#d7c9a780",
+  "app": {
+    "terminalUIColor": "#CC8984"
+  }
+}

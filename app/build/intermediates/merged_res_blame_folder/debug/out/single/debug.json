@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.mateterminal.box.app-merged_res-36:/layout_activity_main.xml.flat",
+        "source": "com.mateterminal.box.app-main-38:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.mateterminal.box.app-merged_res-36:/xml_network_security_config.xml.flat",
+        "source": "com.mateterminal.box.app-main-38:/xml/network_security_config.xml"
+    },
+    {
+        "merged": "com.mateterminal.box.app-merged_res-36:/drawable_ic_app_launcher.xml.flat",
+        "source": "com.mateterminal.box.app-main-38:/drawable/ic_app_launcher.xml"
+    }
+]

@@ -1,0 +1,28 @@
+{
+  "name": "Hacker Green",
+  "colorPaletteOverrides": [
+    "#243128",
+    "#14af0d",
+    "#86ce83",
+    "#068a00",
+    "#50be4b",
+    "#4b7649",
+    "#a8f0a4",
+    "#d6fcd4",
+    "#36463b",
+    "#28f11d",
+    "#90e08b",
+    "#4cf443",
+    "#63e65c",
+    "#a8d9a5",
+    "#59ea51",
+    "#fefefe"
+  ],
+  "backgroundColor": "#020f01",
+  "cursorColor": "#15d00d",
+  "foregroundColor": "#16b10e",
+  "selectionColor": "#d4ffc180",
+  "app": {
+    "terminalUIColor": "#2ca43f"
+  }
+}

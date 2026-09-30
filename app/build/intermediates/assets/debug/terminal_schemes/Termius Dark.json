@@ -1,0 +1,28 @@
+{
+  "name": "Termius Dark",
+  "colorPaletteOverrides": [
+    "#343851",
+    "#f24e50",
+    "#008463",
+    "#eca855",
+    "#08639f",
+    "#c13282",
+    "#2091f6",
+    "#e2e3e8",
+    "#8d91a5",
+    "#ff7375",
+    "#3ed7be",
+    "#fdc47d",
+    "#6ba0c3",
+    "#ff7dc5",
+    "#44a7ff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#141729",
+  "cursorColor": "#21b568",
+  "foregroundColor": "#21b568",
+  "selectionColor": "#21b56880",
+  "app": {
+    "terminalUIColor": "#8D91A5"
+  }
+}

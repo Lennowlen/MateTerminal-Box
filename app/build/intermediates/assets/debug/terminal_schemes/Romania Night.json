@@ -1,0 +1,28 @@
+{
+  "name": "Romania Night",
+  "colorPaletteOverrides": [
+    "#0b141f",
+    "#b50011",
+    "#124150",
+    "#8d562d",
+    "#444f60",
+    "#5b2928",
+    "#80252d",
+    "#917d7c",
+    "#1d2d41",
+    "#de1016",
+    "#b16749",
+    "#d74d29",
+    "#e69148",
+    "#c2b1ad",
+    "#f7d382",
+    "#f5f5ea"
+  ],
+  "backgroundColor": "#0b141f",
+  "cursorColor": "#f7d382",
+  "foregroundColor": "#f5f5ea",
+  "selectionColor": "#f5f5ea80",
+  "app": {
+    "terminalUIColor": "#8092A7"
+  }
+}

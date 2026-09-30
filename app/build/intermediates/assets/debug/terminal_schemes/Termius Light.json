@@ -1,0 +1,28 @@
+{
+  "name": "Termius Light",
+  "colorPaletteOverrides": [
+    "#141729",
+    "#f24e50",
+    "#198c51",
+    "#f8aa4b",
+    "#004878",
+    "#8f3c91",
+    "#2091f6",
+    "#eeeeee",
+    "#3e4257",
+    "#ff7375",
+    "#21b568",
+    "#fdc47d",
+    "#1d6da2",
+    "#ff7dc5",
+    "#44a7ff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#d5dde0",
+  "cursorColor": "#32364a",
+  "foregroundColor": "#32364a",
+  "selectionColor": "#32364a80",
+  "app": {
+    "terminalUIColor": "#6C797E"
+  }
+}

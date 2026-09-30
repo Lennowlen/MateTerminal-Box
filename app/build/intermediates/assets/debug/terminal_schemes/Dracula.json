@@ -1,0 +1,28 @@
+{
+  "name": "Dracula",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#e04242",
+    "#45e16c",
+    "#e3ec7d",
+    "#9b7dc6",
+    "#e469b0",
+    "#8be9fd",
+    "#cac5c5",
+    "#4a4a4a",
+    "#ff5555",
+    "#b5ffc8",
+    "#fff9c8",
+    "#c8a1ff",
+    "#ff8cce",
+    "#c8f5ff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#282a36",
+  "cursorColor": "#bbbbbb",
+  "foregroundColor": "#f8f8f2",
+  "selectionColor": "#f8f8f280",
+  "app": {
+    "terminalUIColor": "#7D8197"
+  }
+}

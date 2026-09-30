@@ -1,0 +1,28 @@
+{
+  "name": "Novel",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#d30f0f",
+    "#00933b",
+    "#d38b40",
+    "#00528e",
+    "#cc32cf",
+    "#26c3e6",
+    "#a6a6a6",
+    "#5c5c5c",
+    "#e0692f",
+    "#00b400",
+    "#fff284",
+    "#3ba6f3",
+    "#ec88c2",
+    "#38daff",
+    "#f2f2f2"
+  ],
+  "backgroundColor": "#dfdbc3",
+  "cursorColor": "#73635a",
+  "foregroundColor": "#3b2322",
+  "selectionColor": "#3b232280",
+  "app": {
+    "terminalUIColor": "#6F6C5A"
+  }
+}

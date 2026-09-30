@@ -26,13 +26,14 @@ class ServerBoxTelemetryCollector(private val host: HostModel) {
 
         try {
             val jsch = JSch()
-            if (host.passwordOrKey.isNotBlank() && host.passwordOrKey.contains("BEGIN PRIVATE KEY")) {
-                jsch.addIdentity("key", host.passwordOrKey.toByteArray(), null, null)
+            val hostSecret = host.passwordOrKey
+            if (hostSecret.isNotBlank() && hostSecret.contains("BEGIN PRIVATE KEY")) {
+                jsch.addIdentity("key", hostSecret.toByteArray(), null, null)
             }
 
             val session: Session = jsch.getSession(host.username, host.hostname, host.port).apply {
-                if (host.passwordOrKey.isNotBlank() && !host.passwordOrKey.contains("BEGIN PRIVATE KEY")) {
-                    setPassword(host.passwordOrKey)
+                if (hostSecret.isNotBlank() && !hostSecret.contains("BEGIN PRIVATE KEY")) {
+                    setPassword(hostSecret)
                 }
                 val config = Properties().apply {
                     put("StrictHostKeyChecking", "no")

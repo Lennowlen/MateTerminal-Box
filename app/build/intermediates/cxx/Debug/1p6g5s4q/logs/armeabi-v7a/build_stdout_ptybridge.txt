@@ -1,0 +1,2 @@
+ninja: Entering directory `D:\rann\Documents\Labs\mate-terminal-box\app\.cxx\Debug\1p6g5s4q\armeabi-v7a'
+ninja: no work to do.

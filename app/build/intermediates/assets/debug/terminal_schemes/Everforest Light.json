@@ -1,0 +1,28 @@
+{
+  "name": "Everforest Light",
+  "colorPaletteOverrides": [
+    "#42494e",
+    "#d2413e",
+    "#919d45",
+    "#d89902",
+    "#2b7ba7",
+    "#bc72a5",
+    "#50b08c",
+    "#c8d0c9",
+    "#575656",
+    "#e67e80",
+    "#a7c080",
+    "#dbbc7f",
+    "#7fbbb3",
+    "#d699b6",
+    "#83c092",
+    "#d7e2d8"
+  ],
+  "backgroundColor": "#fefbf1",
+  "cursorColor": "#5c6a72",
+  "foregroundColor": "#5c6a72",
+  "selectionColor": "#5c6a7280",
+  "app": {
+    "terminalUIColor": "#959F92"
+  }
+}

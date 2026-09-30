@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent_amber">#ffb142</color>
+    <color name="accent_blue">#38bdf8</color>
+    <color name="accent_cyan">#00d8d6</color>
+    <color name="accent_emerald">#00e676</color>
+    <color name="accent_purple">#7952ff</color>
+    <color name="accent_rose">#ff5252</color>
+    <color name="accent_termius">#7952ff</color>
+    <color name="bg_card">#1c202d</color>
+    <color name="bg_primary">#0e111a</color>
+    <color name="bg_secondary">#161922</color>
+    <color name="bg_sidebar">#141720</color>
+    <color name="bg_terminal">#090b10</color>
+    <color name="border_color">#262b3a</color>
+    <color name="border_focus">#7952ff</color>
+    <color name="text_muted">#586069</color>
+    <color name="text_primary">#f0f6fc</color>
+    <color name="text_secondary">#8b949e</color>
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_new_tab">New Tab</string>
+    <string name="action_split_view">Split Mode</string>
+    <string name="app_name">MateTerminal-Box</string>
+    <string name="dialog_add_host_title">Add New SSH Host</string>
+    <string name="host_ip_hint">IP / Hostname (e.g. 192.168.1.100)</string>
+    <string name="host_name_hint">Host Label (e.g. VPS Singapore)</string>
+    <string name="host_password_hint">Password / Private Key Passphrase</string>
+    <string name="host_port_hint">Port (Default 22)</string>
+    <string name="host_user_hint">Username (e.g. root, ubuntu)</string>
+    <string name="nav_hosts">Hosts</string>
+    <string name="nav_monitor">ServerBox Monitor</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_snippets">Snippets</string>
+    <string name="nav_terminal">Terminal</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_connecting">Connecting...</string>
+    <string name="status_disconnected">Disconnected</string>
+    <style name="Theme.MateTerminal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/accent_cyan</item>
+        <item name="colorPrimaryVariant">@color/accent_blue</item>
+        <item name="colorOnPrimary">@color/bg_primary</item>
+        
+        <item name="colorSecondary">@color/accent_emerald</item>
+        <item name="colorSecondaryVariant">@color/accent_cyan</item>
+        <item name="colorOnSecondary">@color/bg_primary</item>
+        
+        <item name="android:statusBarColor">@color/bg_sidebar</item>
+        <item name="android:navigationBarColor">@color/bg_sidebar</item>
+        <item name="android:windowBackground">@color/bg_primary</item>
+    </style>
+</resources>

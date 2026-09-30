@@ -1,0 +1,28 @@
+{
+  "name": "Material Light",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#b7141f",
+    "#457b24",
+    "#f6981e",
+    "#134eb2",
+    "#560088",
+    "#0e717c",
+    "#f5f5f5",
+    "#424242",
+    "#e83b3f",
+    "#7aba3a",
+    "#ffea2e",
+    "#54a4f3",
+    "#aa4dbc",
+    "#26bbd1",
+    "#d9d9d9"
+  ],
+  "backgroundColor": "#eaeaea",
+  "cursorColor": "#16afca",
+  "foregroundColor": "#2f2f2f",
+  "selectionColor": "#23232280",
+  "app": {
+    "terminalUIColor": "#747474"
+  }
+}

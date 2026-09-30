@@ -1,0 +1,28 @@
+{
+  "name": "Rosé Pine Dawn",
+  "colorPaletteOverrides": [
+    "#c9c0b9",
+    "#b4637a",
+    "#56949f",
+    "#ea9d34",
+    "#286983",
+    "#875fb5",
+    "#c47874",
+    "#3e3a5b",
+    "#e5dcd3",
+    "#e8829f",
+    "#a0d5df",
+    "#f6c177",
+    "#46afd9",
+    "#be96ec",
+    "#dd8f8c",
+    "#aaa2e2"
+  ],
+  "backgroundColor": "#faf4ed",
+  "cursorColor": "#575279",
+  "foregroundColor": "#575279",
+  "selectionColor": "#57527980",
+  "app": {
+    "terminalUIColor": "#7D776F"
+  }
+}

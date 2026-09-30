@@ -1,0 +1,28 @@
+{
+  "name": "Diwali",
+  "colorPaletteOverrides": [
+    "#1e0b34",
+    "#ad0656",
+    "#00b45d",
+    "#f8d203",
+    "#4548e1",
+    "#e869ea",
+    "#00d5dd",
+    "#856da2",
+    "#5a3f7e",
+    "#f02889",
+    "#35ef96",
+    "#ffe769",
+    "#7578ff",
+    "#fc99ff",
+    "#47eef4",
+    "#f8efff"
+  ],
+  "backgroundColor": "#311652",
+  "cursorColor": "#ffa900",
+  "foregroundColor": "#fdf6f6",
+  "selectionColor": "#ffa90080",
+  "app": {
+    "terminalUIColor": "#856EA2"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "Nord Dark",
+  "colorPaletteOverrides": [
+    "#3b4252",
+    "#ae545d",
+    "#8ca377",
+    "#dabe84",
+    "#718fae",
+    "#95728e",
+    "#78acbb",
+    "#d8dee9",
+    "#4c556a",
+    "#d97982",
+    "#a3be8b",
+    "#eacb8a",
+    "#a4c7e9",
+    "#b48dac",
+    "#8fbcbb",
+    "#eceff4"
+  ],
+  "backgroundColor": "#2e3440",
+  "cursorColor": "#eceff4",
+  "foregroundColor": "#d8dee9",
+  "selectionColor": "#eceff480",
+  "app": {
+    "terminalUIColor": "#808A9E"
+  }
+}

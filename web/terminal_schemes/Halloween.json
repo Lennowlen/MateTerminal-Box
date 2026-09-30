@@ -1,0 +1,28 @@
+{
+  "name": "Halloween",
+  "colorPaletteOverrides": [
+    "#100015",
+    "#a31736",
+    "#887225",
+    "#ff7600",
+    "#5c50a6",
+    "#6d008d",
+    "#ae4fa4",
+    "#c7c7c6",
+    "#694a71",
+    "#ff2e5d",
+    "#c3a640",
+    "#ffa85e",
+    "#8e7cff",
+    "#c500ff",
+    "#f491ea",
+    "#fafafa"
+  ],
+  "backgroundColor": "#22012b",
+  "cursorColor": "#ffa900",
+  "foregroundColor": "#e5e5e5",
+  "selectionColor": "#ffa90080",
+  "app": {
+    "terminalUIColor": "#9F84A7"
+  }
+}

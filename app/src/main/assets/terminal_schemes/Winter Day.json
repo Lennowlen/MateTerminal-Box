@@ -1,0 +1,28 @@
+{
+  "name": "Winter Day",
+  "colorPaletteOverrides": [
+    "#685b3f",
+    "#9c3b12",
+    "#5a9f79",
+    "#dca067",
+    "#546f88",
+    "#5d4864",
+    "#2e8e9a",
+    "#d1c6af",
+    "#857554",
+    "#b26848",
+    "#7cb596",
+    "#ffc48d",
+    "#6d8fb0",
+    "#d3b3dd",
+    "#56b6c2",
+    "#fff7e4"
+  ],
+  "backgroundColor": "#ece3d1",
+  "cursorColor": "#5c6370",
+  "foregroundColor": "#1a2720",
+  "selectionColor": "#abb2bf80",
+  "app": {
+    "terminalUIColor": "#887F6A"
+  }
+}

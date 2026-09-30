@@ -1,0 +1,28 @@
+{
+  "name": "Kanagawa Wave",
+  "colorPaletteOverrides": [
+    "#16161d",
+    "#c34043",
+    "#5d864d",
+    "#c0a36e",
+    "#7e9cd8",
+    "#6f549b",
+    "#6a9589",
+    "#c8c093",
+    "#727169",
+    "#e9585b",
+    "#98bb6c",
+    "#e6c384",
+    "#7fb4ca",
+    "#a18bc4",
+    "#8bc5b9",
+    "#dcd7ba"
+  ],
+  "backgroundColor": "#1f1f28",
+  "cursorColor": "#c8c093",
+  "foregroundColor": "#dcd7ba",
+  "selectionColor": "#d7ba8080",
+  "app": {
+    "terminalUIColor": "#88928a"
+  }
+}

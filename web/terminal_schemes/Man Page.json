@@ -1,0 +1,28 @@
+{
+  "name": "Man Page",
+  "colorPaletteOverrides": [
+    "#383838",
+    "#9a183c",
+    "#009100",
+    "#be6600",
+    "#114695",
+    "#b72fb9",
+    "#3bcbea",
+    "#959595",
+    "#a7a7a7",
+    "#e0692f",
+    "#00b400",
+    "#ffb571",
+    "#3392d6",
+    "#ec88c2",
+    "#70e4ff",
+    "#dadada"
+  ],
+  "backgroundColor": "#fef49c",
+  "cursorColor": "#7f7f7f",
+  "foregroundColor": "#000000",
+  "selectionColor": "#00000080",
+  "app": {
+    "terminalUIColor": "#848057"
+  }
+}

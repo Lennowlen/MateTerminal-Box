@@ -1,0 +1,28 @@
+{
+  "name": "Atom One Light",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#e45649",
+    "#4c9b4b",
+    "#c99525",
+    "#4078f2",
+    "#a626a4",
+    "#0184bc",
+    "#b8b9bf",
+    "#474747",
+    "#ff7468",
+    "#74ca72",
+    "#dba633",
+    "#6a99ff",
+    "#c142bf",
+    "#00b1fd",
+    "#ffffff"
+  ],
+  "backgroundColor": "#f9f9f9",
+  "cursorColor": "#383a42",
+  "foregroundColor": "#383a42",
+  "selectionColor": "#383a4280",
+  "app": {
+    "terminalUIColor": "#9395A3"
+  }
+}

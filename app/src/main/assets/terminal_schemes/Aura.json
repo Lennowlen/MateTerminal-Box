@@ -1,0 +1,28 @@
+{
+  "name": "Aura",
+  "colorPaletteOverrides": [
+    "#1c1b22",
+    "#ff6767",
+    "#4deeb8",
+    "#f4be77",
+    "#5b72ee",
+    "#a277ff",
+    "#51fafa",
+    "#dddbfa",
+    "#4d4d4d",
+    "#ffa285",
+    "#99ffdd",
+    "#ffd49d",
+    "#8296ff",
+    "#b592ff",
+    "#8cffff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#21202e",
+  "cursorColor": "#edecee",
+  "foregroundColor": "#edecee",
+  "selectionColor": "#edecee80",
+  "app": {
+    "terminalUIColor": "#A6A2D7"
+  }
+}

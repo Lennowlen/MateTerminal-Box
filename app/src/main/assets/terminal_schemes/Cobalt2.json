@@ -1,0 +1,28 @@
+{
+  "name": "Cobalt2",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#ff0000",
+    "#38de21",
+    "#ffe50a",
+    "#1460d2",
+    "#ff4387",
+    "#00bbbb",
+    "#cfcfcf",
+    "#555555",
+    "#ff757a",
+    "#69fb79",
+    "#fff285",
+    "#77adff",
+    "#ff92cc",
+    "#6bffff",
+    "#ffffff"
+  ],
+  "backgroundColor": "#132738",
+  "cursorColor": "#f0cc09",
+  "foregroundColor": "#ffffff",
+  "selectionColor": "#ffffff80",
+  "app": {
+    "terminalUIColor": "#8B9CAB"
+  }
+}

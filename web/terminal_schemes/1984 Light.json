@@ -1,0 +1,28 @@
+{
+  "name": "1984 Light",
+  "colorPaletteOverrides": [
+    "#1f2022",
+    "#f93bb8",
+    "#2cb569",
+    "#ea9033",
+    "#0380d9",
+    "#cf29ea",
+    "#0698a4",
+    "#dedef4",
+    "#1f2022",
+    "#ff89d6",
+    "#59d08e",
+    "#ffb76d",
+    "#6dc2ff",
+    "#e26eff",
+    "#3bcfdb",
+    "#fbfbfe"
+  ],
+  "backgroundColor": "#e4ecf4",
+  "cursorColor": "#353247",
+  "foregroundColor": "#353247",
+  "selectionColor": "#35324780",
+  "app": {
+    "terminalUIColor": "#798DA1"
+  }
+}

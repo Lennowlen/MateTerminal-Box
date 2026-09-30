@@ -1,0 +1,28 @@
+{
+  "name": "Night Owl",
+  "colorPaletteOverrides": [
+    "#072945",
+    "#ef5350",
+    "#22da6e",
+    "#c5e478",
+    "#82aaff",
+    "#c792ea",
+    "#21c7a8",
+    "#e1f1ff",
+    "#575656",
+    "#ff7472",
+    "#40fa8d",
+    "#ffeb95",
+    "#a0beff",
+    "#daa4ff",
+    "#7fdbca",
+    "#ffffff"
+  ],
+  "backgroundColor": "#011627",
+  "cursorColor": "#80a4c2",
+  "foregroundColor": "#d6deeb",
+  "selectionColor": "#d6deeb80",
+  "app": {
+    "terminalUIColor": "#6D90AD"
+  }
+}

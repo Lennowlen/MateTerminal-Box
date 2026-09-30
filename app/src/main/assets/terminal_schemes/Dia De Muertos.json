@@ -1,0 +1,28 @@
+{
+  "name": "Dia de muertos",
+  "colorPaletteOverrides": [
+    "#020018",
+    "#eb1670",
+    "#23816c",
+    "#fb6633",
+    "#5c439e",
+    "#9d2686",
+    "#e29b00",
+    "#d2cbb4",
+    "#3f3b64",
+    "#f63b7b",
+    "#28aa8b",
+    "#ffa85e",
+    "#7a54df",
+    "#ff81c7",
+    "#ffbe30",
+    "#f1ebd9"
+  ],
+  "backgroundColor": "#fffdf5",
+  "cursorColor": "#b33a00",
+  "foregroundColor": "#281f63",
+  "selectionColor": "#e6760180",
+  "app": {
+    "terminalUIColor": "#8B8982"
+  }
+}

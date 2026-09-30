@@ -1,0 +1,28 @@
+{
+  "name": "Nord Light",
+  "colorPaletteOverrides": [
+    "#2c3344",
+    "#ae545d",
+    "#8ca377",
+    "#dabe84",
+    "#718fae",
+    "#95728e",
+    "#78acbb",
+    "#d8dee9",
+    "#4c556a",
+    "#d97982",
+    "#a3be8b",
+    "#eacb8a",
+    "#a4c7e9",
+    "#b48dac",
+    "#8fbcbb",
+    "#eceff4"
+  ],
+  "backgroundColor": "#e5e9f0",
+  "cursorColor": "#88c0d0",
+  "foregroundColor": "#414858",
+  "selectionColor": "#41485880",
+  "app": {
+    "terminalUIColor": "#6F7683"
+  }
+}

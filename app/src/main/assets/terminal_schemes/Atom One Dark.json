@@ -1,0 +1,28 @@
+{
+  "name": "Atom One Dark",
+  "colorPaletteOverrides": [
+    "#000000",
+    "#ca6169",
+    "#82a568",
+    "#bf8c5d",
+    "#56a2e1",
+    "#b76ccd",
+    "#4e9aa3",
+    "#c5cbd6",
+    "#5c6370",
+    "#e77c84",
+    "#b4e294",
+    "#e9b17b",
+    "#7ec5ff",
+    "#db8df2",
+    "#64cfdd",
+    "#ffffff"
+  ],
+  "backgroundColor": "#1e2127",
+  "cursorColor": "#5c6370",
+  "foregroundColor": "#abb2bf",
+  "selectionColor": "#abb2bf80",
+  "app": {
+    "terminalUIColor": "#70798D"
+  }
+}

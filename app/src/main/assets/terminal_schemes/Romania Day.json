@@ -1,0 +1,28 @@
+{
+  "name": "Romania Day",
+  "colorPaletteOverrides": [
+    "#300f0d",
+    "#b50011",
+    "#1c817b",
+    "#b4a667",
+    "#798cb1",
+    "#cf7751",
+    "#fd7d89",
+    "#bfb3a4",
+    "#5b2c29",
+    "#000000",
+    "#5bc2b1",
+    "#ffcd87",
+    "#e69148",
+    "#c2b1ad",
+    "#ddb763",
+    "#fffefd"
+  ],
+  "backgroundColor": "#f5e8e7",
+  "cursorColor": "#d7b25e",
+  "foregroundColor": "#632228",
+  "selectionColor": "#63222880",
+  "app": {
+    "terminalUIColor": "#B29A98"
+  }
+}

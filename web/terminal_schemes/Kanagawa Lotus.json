@@ -1,0 +1,28 @@
+{
+  "name": "Kanagawa Lotus",
+  "colorPaletteOverrides": [
+    "#1f1f28",
+    "#c84053",
+    "#6f894e",
+    "#cbbc41",
+    "#4871af",
+    "#e56792",
+    "#5fa99c",
+    "#545464",
+    "#555448",
+    "#e65569",
+    "#88a760",
+    "#e5d978",
+    "#6693bf",
+    "#c299ff",
+    "#7cc4b0",
+    "#43436c"
+  ],
+  "backgroundColor": "#f2ecbc",
+  "cursorColor": "#43436c",
+  "foregroundColor": "#545464",
+  "selectionColor": "#54648080",
+  "app": {
+    "terminalUIColor": "#88928a"
+  }
+}

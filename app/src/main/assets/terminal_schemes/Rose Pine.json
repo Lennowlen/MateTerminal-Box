@@ -1,0 +1,28 @@
+{
+  "name": "Rosé Pine",
+  "colorPaletteOverrides": [
+    "#26233a",
+    "#be5d78",
+    "#78b1bb",
+    "#e4ad5f",
+    "#266782",
+    "#9c7ac5",
+    "#c28987",
+    "#e0def4",
+    "#6e6a86",
+    "#eb6f92",
+    "#9ccfd8",
+    "#f6c177",
+    "#4386a1",
+    "#d5b2ff",
+    "#ebbcba",
+    "#f0eeff"
+  ],
+  "backgroundColor": "#191724",
+  "cursorColor": "#e0def4",
+  "foregroundColor": "#e0def4",
+  "selectionColor": "#e0def480",
+  "app": {
+    "terminalUIColor": "#858297"
+  }
+}

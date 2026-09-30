@@ -1,0 +1,28 @@
+{
+  "name": "Silver Aerogel",
+  "colorPaletteOverrides": [
+    "#262424",
+    "#ca3535",
+    "#09672f",
+    "#ffbe73",
+    "#004582",
+    "#cf41e6",
+    "#45adce",
+    "#eae9e9",
+    "#b6b6b6",
+    "#ff7658",
+    "#57cc5c",
+    "#fff06b",
+    "#487bff",
+    "#ff60c9",
+    "#2cc6f7",
+    "#ffffff"
+  ],
+  "backgroundColor": "#919191",
+  "cursorColor": "#d9d9d9",
+  "foregroundColor": "#000000",
+  "selectionColor": "#00000080",
+  "app": {
+    "terminalUIColor": "#4D4D4D"
+  }
+}

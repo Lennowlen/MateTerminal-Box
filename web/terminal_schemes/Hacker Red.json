@@ -1,0 +1,28 @@
+{
+  "name": "Hacker Red",
+  "colorPaletteOverrides": [
+    "#381313",
+    "#b00d0d",
+    "#5d2020",
+    "#890000",
+    "#be4a4a",
+    "#7a3b3b",
+    "#ff7979",
+    "#ffd2d2",
+    "#993f3f",
+    "#ff1111",
+    "#d26d6d",
+    "#f54242",
+    "#e55b5b",
+    "#c87b7b",
+    "#ff4d4d",
+    "#fefefe"
+  ],
+  "backgroundColor": "#200000",
+  "cursorColor": "#b00d0d",
+  "foregroundColor": "#b10e0e",
+  "selectionColor": "#ebc1ff80",
+  "app": {
+    "terminalUIColor": "#a42c2c"
+  }
+}

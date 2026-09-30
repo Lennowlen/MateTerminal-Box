@@ -1,0 +1,28 @@
+{
+  "name": "Winter Night",
+  "colorPaletteOverrides": [
+    "#1e2c37",
+    "#933911",
+    "#51876b",
+    "#cc9867",
+    "#3e5f7e",
+    "#82658a",
+    "#7cb298",
+    "#f9edcc",
+    "#35424c",
+    "#d85751",
+    "#7b9a8a",
+    "#e7cf91",
+    "#6098aa",
+    "#b690e6",
+    "#94d2b5",
+    "#fff9ea"
+  ],
+  "backgroundColor": "#00192c",
+  "cursorColor": "#f8cfa6",
+  "foregroundColor": "#e4d5cc",
+  "selectionColor": "#e4d5cc80",
+  "app": {
+    "terminalUIColor": "#869CB2"
+  }
+}

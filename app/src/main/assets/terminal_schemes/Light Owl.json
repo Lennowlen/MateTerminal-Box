@@ -1,0 +1,28 @@
+{
+  "name": "Light Owl",
+  "colorPaletteOverrides": [
+    "#403f53",
+    "#de3d3b",
+    "#08916a",
+    "#e0af02",
+    "#288ed7",
+    "#d6438a",
+    "#2aa298",
+    "#e8e5e5",
+    "#57566d",
+    "#fa5d5b",
+    "#1abf90",
+    "#f4c315",
+    "#3ca3ec",
+    "#f559a4",
+    "#39c6ba",
+    "#f6f6f6"
+  ],
+  "backgroundColor": "#fbfbfb",
+  "cursorColor": "#90a7b2",
+  "foregroundColor": "#403f53",
+  "selectionColor": "#403f5380",
+  "app": {
+    "terminalUIColor": "#8898A4"
+  }
+}

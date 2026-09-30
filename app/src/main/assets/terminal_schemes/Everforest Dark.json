@@ -1,0 +1,28 @@
+{
+  "name": "Everforest Dark",
+  "colorPaletteOverrides": [
+    "#42494e",
+    "#a1484a",
+    "#778e54",
+    "#ba9e68",
+    "#388084",
+    "#906378",
+    "#6ca37a",
+    "#c0dac6",
+    "#575656",
+    "#e67e80",
+    "#a7c080",
+    "#dbbc7f",
+    "#7fbbb3",
+    "#d699b6",
+    "#83c092",
+    "#e8f4eb"
+  ],
+  "backgroundColor": "#282e32",
+  "cursorColor": "#d3c6aa",
+  "foregroundColor": "#d3c6aa",
+  "selectionColor": "#d3c6aa80",
+  "app": {
+    "terminalUIColor": "#88928A"
+  }
+}

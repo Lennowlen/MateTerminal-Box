@@ -1,0 +1,28 @@
+{
+  "name": "Gruvbox Light",
+  "colorPaletteOverrides": [
+    "#dfd6b1",
+    "#9d0006",
+    "#79740e",
+    "#b57614",
+    "#076678",
+    "#8f3f71",
+    "#427b58",
+    "#3c3836",
+    "#9d8374",
+    "#cc241d",
+    "#98971a",
+    "#d79921",
+    "#458588",
+    "#d180a5",
+    "#689d69",
+    "#7c6f64"
+  ],
+  "backgroundColor": "#fbf1c7",
+  "cursorColor": "#282828",
+  "foregroundColor": "#282828",
+  "selectionColor": "#28282880",
+  "app": {
+    "terminalUIColor": "#857D5F"
+  }
+}

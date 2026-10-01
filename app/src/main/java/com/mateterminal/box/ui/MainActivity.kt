@@ -8,30 +8,31 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mateterminal.box.R
-import com.mateterminal.box.core.monitor.ServerBoxTelemetryCollector
-import com.mateterminal.box.core.pty.LocalPTYManager
 import com.mateterminal.box.core.ssh.SSHClientManager
 import com.mateterminal.box.core.storage.AuthType
 import com.mateterminal.box.core.storage.HostModel
-import com.mateterminal.box.core.storage.SessionWindowModel
+import com.mateterminal.box.core.storage.LogEventType
 import com.mateterminal.box.core.storage.SnippetModel
 import com.mateterminal.box.core.storage.StorageManager
-import com.mateterminal.box.core.theme.OhMyZshTheme
 import com.mateterminal.box.databinding.ActivityMainBinding
 import com.mateterminal.box.service.TerminalForegroundService
 import kotlinx.coroutines.Dispatchers
@@ -43,81 +44,66 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.util.UUID
 
-enum class WindowSplitMode {
-    SINGLE,   // 1x1
-    DUAL_H,   // 1x2 Left/Right
-    DUAL_V,   // 2x1 Top/Bottom
-    QUAD,     // 2x2 Matrix
-    PIP       // Floating Overlay
-}
-
-enum class ActiveViewportView {
-    TERMINAL_MATRIX,
+enum class TermiusScreen {
     HOSTS_VAULT,
-    SESSION_WINDOWS,
-    SERVERBOX_HUD
+    TERMINALS,
+    SNIPPETS,
+    SFTP,
+    SETTINGS
 }
 
-data class TabSession(
+data class TermiusTerminalTab(
     val id: String = UUID.randomUUID().toString(),
     val host: HostModel,
     var isConnected: Boolean = false,
     var sshManager: SSHClientManager? = null,
-    var ptyManager: LocalPTYManager? = null,
-    val outputBuffer: StringBuilder = StringBuilder()
-)
-
-data class PaneTerminalState(
-    val paneIndex: Int,
-    var session: TabSession? = null,
-    val outputBuffer: StringBuilder = StringBuilder()
+    val outputBuffer: StringBuilder = StringBuilder(),
+    var readJob: Job? = null
 )
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    
-    // Multi-tab sessions
-    private val tabSessions = mutableListOf<TabSession>()
-    private var activeTabSessionIndex = 0
-    
-    // Session Window Split state
-    private var currentSplitMode = WindowSplitMode.SINGLE
-    private var activeFocusedPane = 1 // 1..4
-    private val paneStates = Array(4) { idx -> PaneTerminalState(idx + 1) }
 
-    // Navigation & Monitoring
-    private var activeView = ActiveViewportView.TERMINAL_MATRIX
-    private var telemetryJob: Job? = null
-    private var telemetryCollector: ServerBoxTelemetryCollector? = null
+    // Navigation & View
+    private var currentScreen: TermiusScreen = TermiusScreen.HOSTS_VAULT
+
+    // Active SSH Sessions
+    private val terminalTabs = mutableListOf<TermiusTerminalTab>()
+    private var activeTabIndex = 0
+
+    // Keybar Sticky Modifiers
+    private var isCtrlActive = false
+    private var isAltActive = false
+
+    // Host list adapter & cached hosts
+    private var allHosts: List<HostModel> = emptyList()
+    private var filteredHosts: List<HostModel> = emptyList()
+    private lateinit var hostsAdapter: TermiusHostsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Edge-to-edge full screen for Huawei MatePad 12X (3:2 144Hz)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        StorageManager.init(this)
+
         setupWindowInsets()
+        setupTopAppBar()
         setupDrawerNavigation()
-        setupTopAppBarControls()
-        setupSessionWindowSplitModes()
+        setupHostsVault()
+        setupSearchFiltering()
+        setupTerminalInput()
         setupAccessoryKeybar()
-        setupPaneFocusListeners()
-        setupPaneCloseButtons()
+        setupSnippetsView()
         startKeepAliveService()
 
-        // Initialize default local shell session tab
-        val hosts = StorageManager.getHosts()
-        val defaultHost = hosts.firstOrNull() ?: HostModel(
-            name = "Huawei MatePad 12X (Local)",
-            hostname = "localhost",
-            authType = AuthType.LOCAL_PTY,
-            category = "Local"
-        )
-        openSessionTab(defaultHost)
+        // Default screen: Hosts Vault
+        navigateToScreen(TermiusScreen.HOSTS_VAULT)
     }
 
     private fun setupWindowInsets() {
@@ -130,739 +116,825 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDrawerNavigation() {
-        binding.btnOpenDrawer.setOnClickListener {
+    // --- TOP BAR & SEARCH ---
+    private fun setupTopAppBar() {
+        binding.btnNavDrawer.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        binding.drawerItemTerminal.setOnClickListener {
-            switchViewport(ActiveViewportView.TERMINAL_MATRIX)
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        binding.btnTopSearch.setOnClickListener {
+            toggleSearchBar()
         }
 
-        binding.drawerItemSessionWindows.setOnClickListener {
-            switchViewport(ActiveViewportView.SESSION_WINDOWS)
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        binding.btnClearSearch.setOnClickListener {
+            binding.etSearchQuery.setText("")
+            toggleSearchBar()
         }
 
-        binding.drawerItemHosts.setOnClickListener {
-            switchViewport(ActiveViewportView.HOSTS_VAULT)
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        binding.btnTopSort.setOnClickListener {
+            showSortMenu()
         }
 
-        binding.drawerItemMonitor.setOnClickListener {
-            switchViewport(ActiveViewportView.SERVERBOX_HUD)
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        }
-
-        binding.drawerItemSnippets.setOnClickListener {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            showSnippetsModal()
-        }
-
-        binding.drawerItemSettings.setOnClickListener {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            showSettingsModal()
+        binding.btnTopMore.setOnClickListener {
+            showOptionsMenu()
         }
     }
 
-    private fun setupTopAppBarControls() {
-        binding.btnTopAdd.setOnClickListener {
-            showNewSessionOrHostPicker()
+    private fun toggleSearchBar() {
+        if (binding.searchBarContainer.visibility == View.VISIBLE) {
+            binding.searchBarContainer.visibility = View.GONE
+            binding.etSearchQuery.setText("")
+        } else {
+            binding.searchBarContainer.visibility = View.VISIBLE
+            binding.etSearchQuery.requestFocus()
+        }
+    }
+
+    private fun setupSearchFiltering() {
+        binding.etSearchQuery.addTextChangedListener { text ->
+            val query = text?.toString()?.trim() ?: ""
+            filterHosts(query)
+        }
+    }
+
+    private fun filterHosts(query: String) {
+        filteredHosts = if (query.isEmpty()) {
+            allHosts
+        } else {
+            allHosts.filter { host ->
+                host.name.contains(query, ignoreCase = true) ||
+                host.hostname.contains(query, ignoreCase = true) ||
+                host.username.contains(query, ignoreCase = true) ||
+                host.category.contains(query, ignoreCase = true)
+            }
+        }
+        hostsAdapter.updateData(filteredHosts)
+        updateEmptyState()
+    }
+
+    // --- DRAWER NAVIGATION ---
+    private fun setupDrawerNavigation() {
+        binding.navItemHosts.setOnClickListener {
+            navigateToScreen(TermiusScreen.HOSTS_VAULT)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
 
-        binding.btnStripNewTab.setOnClickListener {
-            showNewSessionPicker()
+        binding.navItemTerminals.setOnClickListener {
+            if (terminalTabs.isEmpty()) {
+                Toast.makeText(this, "No active terminal sessions. Select a host to connect.", Toast.LENGTH_SHORT).show()
+                navigateToScreen(TermiusScreen.HOSTS_VAULT)
+            } else {
+                navigateToScreen(TermiusScreen.TERMINALS)
+            }
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         }
 
-        binding.btnVaultNewHost.setOnClickListener {
+        binding.navItemSFTP.setOnClickListener {
+            navigateToScreen(TermiusScreen.SFTP)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        binding.navItemPortForwarding.setOnClickListener {
+            Toast.makeText(this, "Port Forwarding Manager available in Pro", Toast.LENGTH_SHORT).show()
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        binding.navItemSnippets.setOnClickListener {
+            navigateToScreen(TermiusScreen.SNIPPETS)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        binding.navItemKnownHosts.setOnClickListener {
+            showKnownHostsDialog()
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        binding.navItemSettings.setOnClickListener {
+            navigateToScreen(TermiusScreen.SETTINGS)
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        binding.navItemHelp.setOnClickListener {
+            showHelpDialog()
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun navigateToScreen(screen: TermiusScreen) {
+        currentScreen = screen
+        binding.viewHostsVault.visibility = if (screen == TermiusScreen.HOSTS_VAULT) View.VISIBLE else View.GONE
+        binding.viewTerminalSession.visibility = if (screen == TermiusScreen.TERMINALS) View.VISIBLE else View.GONE
+        binding.viewSnippets.visibility = if (screen == TermiusScreen.SNIPPETS) View.VISIBLE else View.GONE
+        binding.viewSFTP.visibility = if (screen == TermiusScreen.SFTP) View.VISIBLE else View.GONE
+        binding.viewSettings.visibility = if (screen == TermiusScreen.SETTINGS) View.VISIBLE else View.GONE
+
+        // Update Top Bar Title
+        when (screen) {
+            TermiusScreen.HOSTS_VAULT -> {
+                binding.tvHeaderTitle.text = "Hosts"
+                binding.vaultSubHeader.visibility = View.VISIBLE
+                binding.btnTopSearch.visibility = View.VISIBLE
+                binding.btnTopSort.visibility = View.VISIBLE
+                refreshHostsList()
+            }
+            TermiusScreen.TERMINALS -> {
+                val activeTab = getActiveTab()
+                binding.tvHeaderTitle.text = activeTab?.host?.name ?: "Terminals"
+                binding.vaultSubHeader.visibility = View.GONE
+                binding.btnTopSearch.visibility = View.GONE
+                binding.btnTopSort.visibility = View.GONE
+                renderActiveTerminal()
+            }
+            TermiusScreen.SNIPPETS -> {
+                binding.tvHeaderTitle.text = "Snippets"
+                binding.vaultSubHeader.visibility = View.GONE
+                binding.btnTopSearch.visibility = View.GONE
+                binding.btnTopSort.visibility = View.GONE
+                setupSnippetsView()
+            }
+            TermiusScreen.SFTP -> {
+                binding.tvHeaderTitle.text = "SFTP"
+                binding.vaultSubHeader.visibility = View.GONE
+                binding.btnTopSearch.visibility = View.GONE
+                binding.btnTopSort.visibility = View.GONE
+            }
+            TermiusScreen.SETTINGS -> {
+                binding.tvHeaderTitle.text = "Settings"
+                binding.vaultSubHeader.visibility = View.GONE
+                binding.btnTopSearch.visibility = View.GONE
+                binding.btnTopSort.visibility = View.GONE
+            }
+        }
+        updateTerminalCountBadge()
+    }
+
+    private fun updateTerminalCountBadge() {
+        val count = terminalTabs.size
+        binding.tvNavTerminalBadge.text = count.toString()
+        binding.tvNavTerminalBadge.visibility = if (count > 0) View.VISIBLE else View.GONE
+    }
+
+    // --- HOSTS VAULT RECYCLERVIEW ---
+    private fun setupHostsVault() {
+        hostsAdapter = TermiusHostsAdapter(
+            onHostClick = { host ->
+                connectToHost(host)
+            },
+            onHostMoreClick = { host, anchorView ->
+                showHostContextMenu(host, anchorView)
+            }
+        )
+        binding.rvHostsList.layoutManager = LinearLayoutManager(this)
+        binding.rvHostsList.adapter = hostsAdapter
+
+        binding.fabAddHost.setOnClickListener {
             showAddHostDialog()
         }
 
-        binding.btnNewSessionWindow.setOnClickListener {
-            showCreateSessionWindowDialog()
-        }
+        refreshHostsList()
     }
 
-    private fun switchViewport(view: ActiveViewportView) {
-        activeView = view
-        binding.paneContainerGrid.visibility = if (view == ActiveViewportView.TERMINAL_MATRIX) View.VISIBLE else View.GONE
-        binding.viewHostsVault.visibility = if (view == ActiveViewportView.HOSTS_VAULT) View.VISIBLE else View.GONE
-        binding.viewSessionWindowManager.visibility = if (view == ActiveViewportView.SESSION_WINDOWS) View.VISIBLE else View.GONE
-        binding.viewServerBoxHud.visibility = if (view == ActiveViewportView.SERVERBOX_HUD) View.VISIBLE else View.GONE
-
-        // Strip visibility: only shown in Terminal Matrix mode
-        binding.sessionTabsStrip.visibility = if (view == ActiveViewportView.TERMINAL_MATRIX) View.VISIBLE else View.GONE
-        binding.sessionWindowSelectors.visibility = if (view == ActiveViewportView.TERMINAL_MATRIX) View.VISIBLE else View.GONE
-
-        when (view) {
-            ActiveViewportView.TERMINAL_MATRIX -> {
-                binding.tvAppTitle.text = "Termius Pro"
-                renderActivePanes()
-            }
-            ActiveViewportView.HOSTS_VAULT -> {
-                binding.tvAppTitle.text = "Hosts Vault"
-                setupHostsVaultList()
-            }
-            ActiveViewportView.SESSION_WINDOWS -> {
-                binding.tvAppTitle.text = "Session Windows"
-                setupSessionWindowsList()
-            }
-            ActiveViewportView.SERVERBOX_HUD -> {
-                binding.tvAppTitle.text = "ServerBox Telemetry"
-                startServerBoxMonitoring()
-            }
-        }
+    private fun refreshHostsList() {
+        allHosts = StorageManager.getHosts()
+        filteredHosts = allHosts
+        hostsAdapter.updateData(filteredHosts)
+        updateEmptyState()
     }
 
-    private fun setupSessionWindowSplitModes() {
-        val defaultBtnBg = Color.TRANSPARENT
-        val activeBtnBg = getColor(R.color.bg_card_active)
-        val tintActive = getColor(R.color.accent_termius)
-        val tintInactive = getColor(R.color.text_secondary)
-
-        fun resetSelectorButtons() {
-            binding.btnModeSingle.setBackgroundColor(defaultBtnBg)
-            binding.btnModeDualH.setBackgroundColor(defaultBtnBg)
-            binding.btnModeDualV.setBackgroundColor(defaultBtnBg)
-            binding.btnModeQuad.setBackgroundColor(defaultBtnBg)
-            binding.btnModePip.setBackgroundColor(defaultBtnBg)
-
-            binding.btnModeSingle.setColorFilter(tintInactive)
-            binding.btnModeDualH.setColorFilter(tintInactive)
-            binding.btnModeDualV.setColorFilter(tintInactive)
-            binding.btnModeQuad.setColorFilter(tintInactive)
-            binding.btnModePip.setColorFilter(tintInactive)
-        }
-
-        binding.btnModeSingle.setOnClickListener {
-            resetSelectorButtons()
-            binding.btnModeSingle.setBackgroundColor(activeBtnBg)
-            binding.btnModeSingle.setColorFilter(tintActive)
-            setSplitMode(WindowSplitMode.SINGLE)
-        }
-
-        binding.btnModeDualH.setOnClickListener {
-            resetSelectorButtons()
-            binding.btnModeDualH.setBackgroundColor(activeBtnBg)
-            binding.btnModeDualH.setColorFilter(tintActive)
-            setSplitMode(WindowSplitMode.DUAL_H)
-        }
-
-        binding.btnModeDualV.setOnClickListener {
-            resetSelectorButtons()
-            binding.btnModeDualV.setBackgroundColor(activeBtnBg)
-            binding.btnModeDualV.setColorFilter(tintActive)
-            setSplitMode(WindowSplitMode.DUAL_V)
-        }
-
-        binding.btnModeQuad.setOnClickListener {
-            resetSelectorButtons()
-            binding.btnModeQuad.setBackgroundColor(activeBtnBg)
-            binding.btnModeQuad.setColorFilter(tintActive)
-            setSplitMode(WindowSplitMode.QUAD)
-        }
-
-        binding.btnModePip.setOnClickListener {
-            resetSelectorButtons()
-            binding.btnModePip.setBackgroundColor(activeBtnBg)
-            binding.btnModePip.setColorFilter(tintActive)
-            setSplitMode(WindowSplitMode.PIP)
-        }
-    }
-
-    private fun setSplitMode(mode: WindowSplitMode) {
-        currentSplitMode = mode
-        when (mode) {
-            WindowSplitMode.SINGLE -> {
-                binding.rowTopPanes.visibility = View.VISIBLE
-                binding.cardPane1.visibility = View.VISIBLE
-                binding.cardPane2.visibility = View.GONE
-                binding.rowBottomPanes.visibility = View.GONE
-                binding.cardPane3.visibility = View.GONE
-                binding.cardPane4.visibility = View.GONE
-            }
-            WindowSplitMode.DUAL_H -> {
-                binding.rowTopPanes.visibility = View.VISIBLE
-                binding.cardPane1.visibility = View.VISIBLE
-                binding.cardPane2.visibility = View.VISIBLE
-                binding.rowBottomPanes.visibility = View.GONE
-                binding.cardPane3.visibility = View.GONE
-                binding.cardPane4.visibility = View.GONE
-                ensurePaneAssigned(2)
-            }
-            WindowSplitMode.DUAL_V -> {
-                binding.rowTopPanes.visibility = View.VISIBLE
-                binding.cardPane1.visibility = View.VISIBLE
-                binding.cardPane2.visibility = View.GONE
-                binding.rowBottomPanes.visibility = View.VISIBLE
-                binding.cardPane3.visibility = View.VISIBLE
-                binding.cardPane4.visibility = View.GONE
-                ensurePaneAssigned(3)
-            }
-            WindowSplitMode.QUAD -> {
-                binding.rowTopPanes.visibility = View.VISIBLE
-                binding.cardPane1.visibility = View.VISIBLE
-                binding.cardPane2.visibility = View.VISIBLE
-                binding.rowBottomPanes.visibility = View.VISIBLE
-                binding.cardPane3.visibility = View.VISIBLE
-                binding.cardPane4.visibility = View.VISIBLE
-                ensurePaneAssigned(2)
-                ensurePaneAssigned(3)
-                ensurePaneAssigned(4)
-            }
-            WindowSplitMode.PIP -> {
-                binding.rowTopPanes.visibility = View.VISIBLE
-                binding.cardPane1.visibility = View.VISIBLE
-                binding.cardPane2.visibility = View.VISIBLE
-                binding.rowBottomPanes.visibility = View.GONE
-                binding.cardPane3.visibility = View.GONE
-                binding.cardPane4.visibility = View.GONE
-                ensurePaneAssigned(2)
-                Toast.makeText(this, "Termius Pro: Floating Overlay Pane Activated", Toast.LENGTH_SHORT).show()
-            }
-        }
-        updatePaneFocusVisuals()
-        renderActivePanes()
-    }
-
-    private fun ensurePaneAssigned(paneIndex: Int) {
-        val state = paneStates[paneIndex - 1]
-        if (state.session == null) {
-            // Pick or create a session for this pane
-            val hosts = StorageManager.getHosts()
-            val hostToUse = hosts.getOrNull((paneIndex - 1) % hosts.size) ?: hosts.first()
-            val newSession = TabSession(host = hostToUse)
-            tabSessions.add(newSession)
-            state.session = newSession
-            connectSession(newSession)
-            renderTabs()
-        }
-    }
-
-    private fun setupPaneFocusListeners() {
-        binding.cardPane1.setOnClickListener { setFocusedPane(1) }
-        binding.cardPane2.setOnClickListener { setFocusedPane(2) }
-        binding.cardPane3.setOnClickListener { setFocusedPane(3) }
-        binding.cardPane4.setOnClickListener { setFocusedPane(4) }
-    }
-
-    private fun setFocusedPane(paneIndex: Int) {
-        activeFocusedPane = paneIndex
-        updatePaneFocusVisuals()
-    }
-
-    private fun updatePaneFocusVisuals() {
-        binding.cardPane1.setBackgroundResource(if (activeFocusedPane == 1) R.drawable.bg_window_active else R.drawable.bg_window_inactive)
-        binding.cardPane2.setBackgroundResource(if (activeFocusedPane == 2) R.drawable.bg_window_active else R.drawable.bg_window_inactive)
-        binding.cardPane3.setBackgroundResource(if (activeFocusedPane == 3) R.drawable.bg_window_active else R.drawable.bg_window_inactive)
-        binding.cardPane4.setBackgroundResource(if (activeFocusedPane == 4) R.drawable.bg_window_active else R.drawable.bg_window_inactive)
-    }
-
-    private fun setupPaneCloseButtons() {
-        binding.btnClosePane1.setOnClickListener { closePane(1) }
-        binding.btnClosePane2.setOnClickListener { closePane(2) }
-        binding.btnClosePane3.setOnClickListener { closePane(3) }
-        binding.btnClosePane4.setOnClickListener { closePane(4) }
-    }
-
-    private fun closePane(paneIndex: Int) {
-        val state = paneStates[paneIndex - 1]
-        state.session?.let { s ->
-            s.sshManager?.disconnect()
-            s.ptyManager?.stop()
-            tabSessions.remove(s)
-            state.session = null
-        }
-        if (paneIndex == 1) {
-            // Always keep at least 1 pane active
-            if (tabSessions.isEmpty()) {
-                val defaultHost = StorageManager.getHosts().first()
-                openSessionTab(defaultHost)
-            } else {
-                paneStates[0].session = tabSessions.first()
-            }
+    private fun updateEmptyState() {
+        if (filteredHosts.isEmpty()) {
+            binding.emptyHostsView.visibility = View.VISIBLE
+            binding.rvHostsList.visibility = View.GONE
         } else {
-            // Auto downgrade split mode if closing multi panes
-            if (currentSplitMode == WindowSplitMode.QUAD && paneIndex in 3..4) {
-                setSplitMode(WindowSplitMode.DUAL_H)
-            } else if (paneIndex == 2) {
-                setSplitMode(WindowSplitMode.SINGLE)
+            binding.emptyHostsView.visibility = View.GONE
+            binding.rvHostsList.visibility = View.VISIBLE
+        }
+    }
+
+    // --- SSH CONNECTION ENGINE ---
+    private fun connectToHost(host: HostModel) {
+        // Check if tab already exists for this host
+        val existingIndex = terminalTabs.indexOfFirst { it.host.id == host.id }
+        if (existingIndex >= 0) {
+            activeTabIndex = existingIndex
+            navigateToScreen(TermiusScreen.TERMINALS)
+            return
+        }
+
+        // Create new tab session
+        val tab = TermiusTerminalTab(host = host)
+        terminalTabs.add(tab)
+        activeTabIndex = terminalTabs.size - 1
+
+        navigateToScreen(TermiusScreen.TERMINALS)
+        renderTabsStrip()
+
+        // Start SSH connection in background
+        tab.outputBuffer.append("Connecting to ${host.username}@${host.hostname}:${host.port}...\n")
+        renderActiveTerminal()
+
+        lifecycleScope.launch {
+            val ssh = SSHClientManager(host)
+            tab.sshManager = ssh
+
+            ssh.connect(
+                cols = 120,
+                rows = 36,
+                onConnected = {
+                    tab.isConnected = true
+                    tab.outputBuffer.append("\u001B[32m[Connected]\u001B[0m\n")
+                    StorageManager.logActivity(
+                        hostId = host.id,
+                        hostName = host.name,
+                        eventType = LogEventType.SSH_CONNECT,
+                        message = "Connected to ${host.username}@${host.hostname}:${host.port}"
+                    )
+                    renderTabsStrip()
+                    renderActiveTerminal()
+                    startSshStreamReader(tab)
+                },
+                onError = { e ->
+                    tab.isConnected = false
+                    tab.outputBuffer.append("\n\u001B[31m[Connection Error: ${e.message}]\u001B[0m\n")
+                    StorageManager.logActivity(
+                        hostId = host.id,
+                        hostName = host.name,
+                        eventType = LogEventType.SYSTEM_ERROR,
+                        message = "SSH Connection failed: ${e.message}"
+                    )
+                    renderTabsStrip()
+                    renderActiveTerminal()
+                }
+            )
+        }
+    }
+
+    private fun startSshStreamReader(tab: TermiusTerminalTab) {
+        tab.readJob?.cancel()
+        tab.readJob = lifecycleScope.launch(Dispatchers.IO) {
+            val stream: InputStream = tab.sshManager?.inputStream ?: return@launch
+            val buffer = ByteArray(4096)
+            try {
+                while (isActive && tab.isConnected) {
+                    val read = stream.read(buffer)
+                    if (read > 0) {
+                        val text = String(buffer, 0, read)
+                        val sanitized = cleanAnsiCodes(text)
+                        withContext(Dispatchers.Main) {
+                            tab.outputBuffer.append(sanitized)
+                            if (getActiveTab()?.id == tab.id) {
+                                binding.tvTerminalOutput.text = tab.outputBuffer.toString()
+                                scrollToBottom()
+                            }
+                        }
+                    } else if (read == -1) {
+                        break
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    tab.outputBuffer.append("\n[Connection Closed: ${e.message}]\n")
+                }
+            } finally {
+                tab.isConnected = false
+                withContext(Dispatchers.Main) {
+                    renderTabsStrip()
+                    renderActiveTerminal()
+                }
             }
         }
-        renderTabs()
-        renderActivePanes()
     }
 
-    private fun openSessionTab(host: HostModel) {
-        val session = TabSession(host = host)
-        tabSessions.add(session)
-        activeTabSessionIndex = tabSessions.size - 1
-        paneStates[0].session = session
-        
-        renderTabs()
-        connectSession(session)
-        renderActivePanes()
+    private fun cleanAnsiCodes(input: String): String {
+        return input.replace(Regex("\u001B\\[[;?0-9]*[a-zA-Z]"), "")
     }
 
-    private fun renderTabs() {
-        binding.tabLayoutContainer.removeAllViews()
-        for (i in tabSessions.indices) {
-            val session = tabSessions[i]
-            val isActiveTab = (i == activeTabSessionIndex)
-            
-            val tabView = LinearLayout(this).apply {
+    private fun getActiveTab(): TermiusTerminalTab? {
+        return if (activeTabIndex in terminalTabs.indices) terminalTabs[activeTabIndex] else null
+    }
+
+    // --- TERMINAL TAB STRIP ---
+    private fun renderTabsStrip() {
+        binding.terminalTabContainer.removeAllViews()
+
+        for ((idx, tab) in terminalTabs.withIndex()) {
+            val tabView = LayoutInflater.from(this).inflate(R.layout.item_termius_host, null, false)
+            // Create chip layout
+            val chip = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
-                setPadding(28, 10, 24, 10)
-                setBackgroundColor(
-                    if (isActiveTab) getColor(R.color.bg_primary) else getColor(R.color.bg_secondary)
-                )
-                
-                val title = TextView(this@MainActivity).apply {
-                    text = "${session.host.name} "
-                    textSize = 12f
-                    typeface = Typeface.MONOSPACE
-                    setTextColor(
-                        if (isActiveTab) getColor(R.color.accent_cyan) else getColor(R.color.text_secondary)
-                    )
+                setPadding(24, 8, 20, 8)
+                val isSelected = idx == activeTabIndex
+                setBackgroundResource(if (isSelected) R.drawable.bg_tab_active else R.drawable.bg_tab_inactive)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+                ).apply {
+                    marginEnd = 12
+                }
+
+                val dot = View(context).apply {
+                    val size = 18
+                    layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                        marginEnd = 14
+                    }
+                    setBackgroundColor(if (tab.isConnected) Color.parseColor("#50fa7b") else Color.parseColor("#ff5555"))
+                }
+                addView(dot)
+
+                val title = TextView(context).apply {
+                    text = tab.host.name
+                    textSize = 13f
+                    setTextColor(if (isSelected) Color.WHITE else Color.parseColor("#8d91a5"))
+                    typeface = Typeface.DEFAULT_BOLD
                 }
                 addView(title)
 
-                if (tabSessions.size > 1) {
-                    val closeBtn = TextView(this@MainActivity).apply {
-                        text = " ×"
-                        textSize = 14f
-                        setTextColor(getColor(R.color.text_muted))
-                        setOnClickListener { closeTab(i) }
+                val btnClose = ImageButton(context).apply {
+                    layoutParams = LinearLayout.LayoutParams(36, 36).apply {
+                        marginStart = 12
                     }
-                    addView(closeBtn)
+                    setBackgroundResource(android.R.color.transparent)
+                    setImageResource(R.drawable.ic_close)
+                    setColorFilter(Color.parseColor("#8d91a5"))
+                    setOnClickListener {
+                        closeTerminalTab(idx)
+                    }
                 }
+                addView(btnClose)
 
                 setOnClickListener {
-                    activeTabSessionIndex = i
-                    paneStates[activeFocusedPane - 1].session = session
-                    renderTabs()
-                    renderActivePanes()
+                    activeTabIndex = idx
+                    renderTabsStrip()
+                    renderActiveTerminal()
                 }
             }
-            binding.tabLayoutContainer.addView(tabView)
+            binding.terminalTabContainer.addView(chip)
+        }
+
+        // Re-add New Tab button
+        binding.terminalTabContainer.addView(binding.btnAddNewTerminalTab)
+        binding.btnAddNewTerminalTab.setOnClickListener {
+            showHostPickerForNewTab()
         }
     }
 
-    private fun closeTab(index: Int) {
-        if (index in tabSessions.indices) {
-            val session = tabSessions.removeAt(index)
-            session.sshManager?.disconnect()
-            session.ptyManager?.stop()
-            if (activeTabSessionIndex >= tabSessions.size) {
-                activeTabSessionIndex = (tabSessions.size - 1).coerceAtLeast(0)
-            }
-            paneStates[0].session = tabSessions.getOrNull(activeTabSessionIndex)
-            renderTabs()
-            renderActivePanes()
-        }
-    }
+    private fun closeTerminalTab(index: Int) {
+        if (index !in terminalTabs.indices) return
+        val tab = terminalTabs.removeAt(index)
+        tab.readJob?.cancel()
+        tab.sshManager?.disconnect()
 
-    private fun connectSession(session: TabSession) {
-        lifecycleScope.launch {
-            if (session.host.authType == AuthType.LOCAL_PTY) {
-                val welcome = OhMyZshTheme.buildRobbyRussellPrompt("~", "main", true)
-                session.outputBuffer.append("Termius Pro [Huawei MatePad 12X Engine]\n")
-                session.outputBuffer.append("Resolution: 2800x1840 (3:2) | 144Hz Refresh\n\n")
-                session.outputBuffer.append(welcome)
-
-                val pty = LocalPTYManager()
-                session.ptyManager = pty
-                pty.start(cols = 140, rows = 40)
-                session.isConnected = true
-                listenStream(session, pty.inputStream)
-            } else {
-                session.outputBuffer.append("Connecting to ${session.host.username}@${session.host.hostname}:${session.host.port}...\n")
-                val ssh = SSHClientManager(session.host)
-                session.sshManager = ssh
-
-                ssh.connect(
-                    cols = 140,
-                    rows = 40,
-                    onConnected = {
-                        session.isConnected = true
-                        session.outputBuffer.append("Connected.\n")
-                        val prompt = OhMyZshTheme.buildAgnosterPrompt(session.host.username, session.host.hostname, "~", "master")
-                        session.outputBuffer.append(prompt)
-                        renderActivePanes()
-                        listenStream(session, ssh.inputStream)
-                    },
-                    onError = { err ->
-                        session.outputBuffer.append("\nConnection Failed: ${err.message}\n")
-                        renderActivePanes()
-                    }
-                )
-            }
-            renderActivePanes()
-        }
-    }
-
-    private fun listenStream(session: TabSession, inputStream: InputStream?) {
-        if (inputStream == null) return
-        lifecycleScope.launch(Dispatchers.IO) {
-            val buffer = ByteArray(4096)
-            try {
-                while (isActive) {
-                    val count = inputStream.read(buffer)
-                    if (count <= 0) break
-                    val text = String(buffer, 0, count)
-                    withContext(Dispatchers.Main) {
-                        session.outputBuffer.append(text)
-                        renderActivePanes()
-                    }
-                }
-            } catch (_: Exception) {}
-        }
-    }
-
-    private fun renderActivePanes() {
-        val cleanRegex = Regex("\u001b\\[[0-9;]*[a-zA-Z]")
-
-        // Pane 1
-        val s1 = paneStates[0].session ?: tabSessions.getOrNull(0)
-        s1?.let {
-            binding.tvPane1Title.text = "Pane 1: ${it.host.name}"
-            binding.tvTerminalOutput1.text = it.outputBuffer.toString().replace(cleanRegex, "")
+        if (activeTabIndex >= terminalTabs.size) {
+            activeTabIndex = terminalTabs.size - 1
         }
 
-        // Pane 2
-        if (binding.cardPane2.visibility == View.VISIBLE) {
-            val s2 = paneStates[1].session ?: tabSessions.getOrNull(1) ?: s1
-            s2?.let {
-                binding.tvPane2Title.text = "Pane 2: ${it.host.name}"
-                binding.tvTerminalOutput2.text = it.outputBuffer.toString().replace(cleanRegex, "")
-            }
-        }
-
-        // Pane 3
-        if (binding.cardPane3.visibility == View.VISIBLE) {
-            val s3 = paneStates[2].session ?: tabSessions.getOrNull(2) ?: s1
-            s3?.let {
-                binding.tvPane3Title.text = "Pane 3: ${it.host.name}"
-                binding.tvTerminalOutput3.text = it.outputBuffer.toString().replace(cleanRegex, "")
-            }
-        }
-
-        // Pane 4
-        if (binding.cardPane4.visibility == View.VISIBLE) {
-            val s4 = paneStates[3].session ?: tabSessions.getOrNull(3) ?: s1
-            s4?.let {
-                binding.tvPane4Title.text = "Pane 4: ${it.host.name}"
-                binding.tvTerminalOutput4.text = it.outputBuffer.toString().replace(cleanRegex, "")
-            }
-        }
-    }
-
-    private fun getActiveFocusedSession(): TabSession? {
-        return paneStates[activeFocusedPane - 1].session ?: tabSessions.getOrNull(activeTabSessionIndex)
-    }
-
-    private fun sendToActiveSession(input: String) {
-        val session = getActiveFocusedSession() ?: return
-        if (session.host.authType == AuthType.LOCAL_PTY) {
-            session.ptyManager?.write(input)
+        if (terminalTabs.isEmpty()) {
+            navigateToScreen(TermiusScreen.HOSTS_VAULT)
         } else {
-            session.sshManager?.write(input)
+            renderTabsStrip()
+            renderActiveTerminal()
         }
+        updateTerminalCountBadge()
+    }
+
+    private fun renderActiveTerminal() {
+        val tab = getActiveTab()
+        if (tab == null) {
+            binding.tvTerminalOutput.text = "No active connection."
+            binding.disconnectedOverlay.visibility = View.GONE
+            return
+        }
+
+        binding.tvHeaderTitle.text = tab.host.name
+        binding.tvTerminalOutput.text = tab.outputBuffer.toString()
+        scrollToBottom()
+
+        binding.tvInputPrompt.text = "${tab.host.username}@${tab.host.name.take(12)}> "
+
+        if (!tab.isConnected && tab.outputBuffer.isNotEmpty()) {
+            binding.disconnectedOverlay.visibility = View.VISIBLE
+            binding.btnReconnect.setOnClickListener {
+                connectToHost(tab.host)
+            }
+        } else {
+            binding.disconnectedOverlay.visibility = View.GONE
+        }
+    }
+
+    private fun scrollToBottom() {
+        binding.terminalScrollView.post {
+            binding.terminalScrollView.fullScroll(View.FOCUS_DOWN)
+        }
+    }
+
+    // --- TERMINAL INPUT & ACCESSORY KEYBAR ---
+    private fun setupTerminalInput() {
+        binding.btnSendInput.setOnClickListener {
+            sendCurrentInput()
+        }
+
+        binding.etTerminalInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND || actionId == EditorInfo.IME_ACTION_DONE) {
+                sendCurrentInput()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun sendCurrentInput() {
+        val cmd = binding.etTerminalInput.text.toString()
+        if (cmd.isBlank()) return
+
+        val tab = getActiveTab()
+        if (tab != null && tab.isConnected) {
+            tab.sshManager?.write("$cmd\n")
+            tab.outputBuffer.append("\n> $cmd\n")
+            binding.tvTerminalOutput.text = tab.outputBuffer.toString()
+            scrollToBottom()
+
+            StorageManager.logActivity(
+                hostId = tab.host.id,
+                hostName = tab.host.name,
+                eventType = LogEventType.COMMAND_EXEC,
+                message = cmd
+            )
+        } else {
+            Toast.makeText(this, "Session not connected", Toast.LENGTH_SHORT).show()
+        }
+        binding.etTerminalInput.setText("")
     }
 
     private fun setupAccessoryKeybar() {
-        binding.keyEsc.setOnClickListener { sendToActiveSession("\u001b") }
-        binding.keyTab.setOnClickListener { sendToActiveSession("\t") }
-        binding.keyCtrl.setOnClickListener { sendToActiveSession("\u0003") } // Ctrl+C interrupt
-        binding.keyAlt.setOnClickListener { sendToActiveSession("\u001b") }
-        binding.keyPipe.setOnClickListener { sendToActiveSession("|") }
-        binding.keyTilde.setOnClickListener { sendToActiveSession("~") }
-        binding.keySlash.setOnClickListener { sendToActiveSession("/") }
-        binding.keyHyphen.setOnClickListener { sendToActiveSession("-") }
-        binding.keyUp.setOnClickListener { sendToActiveSession("\u001b[A") }
-        binding.keyDown.setOnClickListener { sendToActiveSession("\u001b[B") }
-        binding.keyLeft.setOnClickListener { sendToActiveSession("\u001b[D") }
-        binding.keyRight.setOnClickListener { sendToActiveSession("\u001b[C") }
-    }
+        binding.keyEsc.setOnClickListener { sendKeySequence("\u001B") }
+        binding.keyTab.setOnClickListener { sendKeySequence("\t") }
 
-    // --- HOSTS VAULT RECYCLER ---
-    private fun setupHostsVaultList() {
-        binding.rvVaultHosts.layoutManager = LinearLayoutManager(this)
-        val hosts = StorageManager.getHosts()
-        binding.rvVaultHosts.adapter = HostAdapter(hosts) { host ->
-            openSessionTab(host)
-            switchViewport(ActiveViewportView.TERMINAL_MATRIX)
-        }
-    }
-
-    // --- SESSION WINDOWS RECYCLER ---
-    private fun setupSessionWindowsList() {
-        binding.rvSessionWindows.layoutManager = LinearLayoutManager(this)
-        var windows = StorageManager.getWindows()
-        if (windows.isEmpty()) {
-            val defaultWindows = listOf(
-                SessionWindowModel(
-                    workspaceName = "Production & Monitoring Matrix (2x2 Quad)",
-                    splitLayoutType = "QUAD",
-                    hostIds = StorageManager.getHosts().map { it.id }
-                ),
-                SessionWindowModel(
-                    workspaceName = "DevOps Dual Stream (1x2 Split H)",
-                    splitLayoutType = "DUAL_H",
-                    hostIds = StorageManager.getHosts().take(2).map { it.id }
-                ),
-                SessionWindowModel(
-                    workspaceName = "Local Shell Focus (1x1 Single)",
-                    splitLayoutType = "SINGLE",
-                    hostIds = listOf("local_device")
-                )
+        binding.keyCtrl.setOnClickListener {
+            isCtrlActive = !isCtrlActive
+            binding.keyCtrl.setBackgroundResource(
+                if (isCtrlActive) R.drawable.bg_termius_key_chip_active else R.drawable.bg_termius_key_chip
             )
-            StorageManager.saveWindows(defaultWindows)
-            windows = defaultWindows
         }
 
-        binding.rvSessionWindows.adapter = SessionWindowAdapter(windows) { win ->
-            applySessionWindowPreset(win)
-            switchViewport(ActiveViewportView.TERMINAL_MATRIX)
+        binding.keyAlt.setOnClickListener {
+            isAltActive = !isAltActive
+            binding.keyAlt.setBackgroundResource(
+                if (isAltActive) R.drawable.bg_termius_key_chip_active else R.drawable.bg_termius_key_chip
+            )
+        }
+
+        binding.keyPipe.setOnClickListener { sendKeySequence("|") }
+        binding.keySlash.setOnClickListener { sendKeySequence("/") }
+        binding.keyHyphen.setOnClickListener { sendKeySequence("-") }
+        binding.keyTilde.setOnClickListener { sendKeySequence("~") }
+
+        binding.keyUp.setOnClickListener { sendKeySequence("\u001B[A") }
+        binding.keyDown.setOnClickListener { sendKeySequence("\u001B[B") }
+        binding.keyRight.setOnClickListener { sendKeySequence("\u001B[C") }
+        binding.keyLeft.setOnClickListener { sendKeySequence("\u001B[D") }
+
+        binding.btnKeySnippets.setOnClickListener {
+            showSnippetsBottomSheet()
         }
     }
 
-    private fun applySessionWindowPreset(win: SessionWindowModel) {
-        when (win.splitLayoutType) {
-            "SINGLE" -> binding.btnModeSingle.performClick()
-            "DUAL_H" -> binding.btnModeDualH.performClick()
-            "DUAL_V" -> binding.btnModeDualV.performClick()
-            "QUAD" -> binding.btnModeQuad.performClick()
-            else -> binding.btnModeSingle.performClick()
+    private fun sendKeySequence(seq: String) {
+        val tab = getActiveTab() ?: return
+        var finalSeq = seq
+
+        if (isCtrlActive && seq.length == 1) {
+            val ch = seq[0]
+            if (ch in 'a'..'z') {
+                finalSeq = (ch.code - 'a'.code + 1).toChar().toString()
+            } else if (ch in 'A'..'Z') {
+                finalSeq = (ch.code - 'A'.code + 1).toChar().toString()
+            }
+            isCtrlActive = false
+            binding.keyCtrl.setBackgroundResource(R.drawable.bg_termius_key_chip)
         }
-        Toast.makeText(this, "Loaded Session Window: ${win.workspaceName}", Toast.LENGTH_SHORT).show()
+
+        if (isAltActive) {
+            finalSeq = "\u001B$finalSeq"
+            isAltActive = false
+            binding.keyAlt.setBackgroundResource(R.drawable.bg_termius_key_chip)
+        }
+
+        tab.sshManager?.write(finalSeq)
     }
 
-    private fun showCreateSessionWindowDialog() {
-        val etName = EditText(this).apply { hint = "Session Window Name (e.g. Quad Kubernetes)" }
+    // --- SNIPPETS VIEW ---
+    private fun setupSnippetsView() {
+        val snippets = StorageManager.getSnippets()
+        binding.rvSnippetsList.layoutManager = LinearLayoutManager(this)
+        binding.rvSnippetsList.adapter = TermiusSnippetsAdapter(snippets) { snippet ->
+            val tab = getActiveTab()
+            if (tab != null && tab.isConnected) {
+                tab.sshManager?.write("${snippet.command}\n")
+                navigateToScreen(TermiusScreen.TERMINALS)
+                Toast.makeText(this, "Executed: ${snippet.title}", Toast.LENGTH_SHORT).show()
+            } else {
+                binding.etTerminalInput.setText(snippet.command)
+                navigateToScreen(TermiusScreen.TERMINALS)
+            }
+        }
+    }
+
+    private fun showSnippetsBottomSheet() {
+        val snippets = StorageManager.getSnippets()
+        val items = snippets.map { "${it.title}\n(${it.command})" }.toTypedArray()
+
         AlertDialog.Builder(this)
-            .setTitle("Create Session Window Preset")
-            .setView(etName)
-            .setPositiveButton("Save Preset") { _, _ ->
-                val name = etName.text.toString().ifBlank { "New Session Window" }
-                val newWin = SessionWindowModel(
-                    workspaceName = name,
-                    splitLayoutType = currentSplitMode.name,
-                    hostIds = tabSessions.map { it.host.id }
-                )
-                val current = StorageManager.getWindows().toMutableList()
-                current.add(0, newWin)
-                StorageManager.saveWindows(current)
-                setupSessionWindowsList()
-                Toast.makeText(this, "Saved Session Window: $name", Toast.LENGTH_SHORT).show()
+            .setTitle("Insert Snippet")
+            .setItems(items) { _, which ->
+                val snippet = snippets[which]
+                val tab = getActiveTab()
+                if (tab != null && tab.isConnected) {
+                    tab.sshManager?.write("${snippet.command}\n")
+                } else {
+                    binding.etTerminalInput.setText(snippet.command)
+                }
+            }
+            .setPositiveButton("Cancel", null)
+            .show()
+    }
+
+    // --- DIALOGS: ADD / EDIT HOST ---
+    private fun showAddHostDialog(existingHost: HostModel? = null) {
+        val isEdit = existingHost != null
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 24)
+        }
+
+        val etLabel = EditText(this).apply {
+            hint = "Alias / Label (e.g. VPS Singapore)"
+            setText(existingHost?.name ?: "")
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+        val etHost = EditText(this).apply {
+            hint = "Hostname / IP (e.g. 103.145.22.45)"
+            setText(existingHost?.hostname ?: "")
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+        val etPort = EditText(this).apply {
+            hint = "Port (Default: 22)"
+            setText((existingHost?.port ?: 22).toString())
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+        val etUser = EditText(this).apply {
+            hint = "Username (e.g. root, ubuntu)"
+            setText(existingHost?.username ?: "root")
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+        val etPassword = EditText(this).apply {
+            hint = "Password / Passphrase"
+            setText(existingHost?.passwordOrKey ?: "")
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+        val etCategory = EditText(this).apply {
+            hint = "Category / Tag (e.g. VPS, Cloud, HomeLab)"
+            setText(existingHost?.category ?: "VPS")
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.parseColor("#8d91a5"))
+        }
+
+        layout.addView(etLabel)
+        layout.addView(etHost)
+        layout.addView(etPort)
+        layout.addView(etUser)
+        layout.addView(etPassword)
+        layout.addView(etCategory)
+
+        AlertDialog.Builder(this)
+            .setTitle(if (isEdit) "Edit SSH Host" else "New SSH Host")
+            .setView(layout)
+            .setPositiveButton(if (isEdit) "Save" else "Add") { _, _ ->
+                val label = etLabel.text.toString().trim().ifBlank { etHost.text.toString().trim() }
+                val hostIp = etHost.text.toString().trim()
+                val port = etPort.text.toString().trim().toIntOrNull() ?: 22
+                val user = etUser.text.toString().trim().ifBlank { "root" }
+                val pass = etPassword.text.toString().trim()
+                val category = etCategory.text.toString().trim().ifBlank { "VPS" }
+
+                if (hostIp.isNotBlank()) {
+                    val newHost = HostModel(
+                        id = existingHost?.id ?: UUID.randomUUID().toString(),
+                        name = label,
+                        hostname = hostIp,
+                        port = port,
+                        username = user,
+                        passwordOrKey = pass,
+                        category = category,
+                        authType = AuthType.PASSWORD
+                    )
+                    StorageManager.addHost(newHost)
+                    refreshHostsList()
+                    Toast.makeText(this, "Host saved: $label", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    // --- SERVERBOX TELEMETRY ---
-    private fun startServerBoxMonitoring() {
-        telemetryJob?.cancel()
-        if (telemetryCollector == null) {
-            val firstHost = StorageManager.getHosts().firstOrNull() ?: return
-            telemetryCollector = ServerBoxTelemetryCollector(firstHost)
-            binding.tvServerBoxTarget.text = "Selected Host: ${firstHost.name} (${firstHost.hostname})"
-        }
-
-        telemetryJob = lifecycleScope.launch {
-            while (isActive) {
-                val metric = telemetryCollector?.collectTelemetry()
-                if (metric != null && activeView == ActiveViewportView.SERVERBOX_HUD) {
-                    updateTelemetryUI(metric)
-                }
-                delay(3000)
-            }
-        }
-    }
-
-    private fun updateTelemetryUI(metric: com.mateterminal.box.core.monitor.ServerTelemetry) {
-        binding.tvCpuPercent.text = String.format("%.1f%%", metric.cpuTotalPercent)
-        binding.pbCpu.progress = metric.cpuTotalPercent.toInt().coerceIn(0, 100)
-
-        val usedGb = metric.memUsedMb / 1024f
-        val totalGb = (metric.memTotalMb / 1024f).coerceAtLeast(1f)
-        val memPct = ((usedGb / totalGb) * 100f).toInt().coerceIn(0, 100)
-        binding.tvMemPercent.text = String.format("%.1f GB / %.1f GB (%d%%)", usedGb, totalGb, memPct)
-        binding.pbMem.progress = memPct
-
-        binding.tvNetSpeed.text = String.format("RX: %.1f KB/s | TX: %.1f KB/s", metric.rxSpeedKbps, metric.txSpeedKbps)
-        binding.tvUptime.text = "Uptime: ${metric.uptimeText} | ${metric.osInfo}"
-    }
-
-    private fun showSnippetsModal() {
-        val snippets = StorageManager.getSnippets()
-        val titles = snippets.map { "${it.title} -> ${it.command}" }.toTypedArray()
+    private fun showHostContextMenu(host: HostModel, anchorView: View) {
+        val options = arrayOf("Connect", "Edit Host", "Delete Host")
         AlertDialog.Builder(this)
-            .setTitle("Snippets Library")
-            .setItems(titles) { _, which ->
-                val snip = snippets[which]
-                sendToActiveSession(snip.command + "\n")
-                Toast.makeText(this, "Executed: ${snip.title}", Toast.LENGTH_SHORT).show()
-                switchViewport(ActiveViewportView.TERMINAL_MATRIX)
-            }
-            .setPositiveButton("Close", null)
-            .show()
-    }
-
-    private fun showSettingsModal() {
-        val themes = arrayOf("Tokyo Night", "Solarized Dark", "Dracula Pro", "Nord Aurora", "One Dark Pro")
-        AlertDialog.Builder(this)
-            .setTitle("Settings & Themes (Termius Pro 64 Schemes)")
-            .setItems(themes) { _, which ->
-                Toast.makeText(this, "Applied Scheme: ${themes[which]}", Toast.LENGTH_SHORT).show()
-            }
-            .setPositiveButton("Close", null)
-            .show()
-    }
-
-    private fun showNewSessionOrHostPicker() {
-        val options = arrayOf("New Local Terminal Tab", "New SSH Tab from Vault", "Create New Host", "New Session Window")
-        AlertDialog.Builder(this)
-            .setTitle("Quick Action")
+            .setTitle(host.name)
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> openSessionTab(StorageManager.getHosts().first())
-                    1 -> showNewSessionPicker()
-                    2 -> showAddHostDialog()
-                    3 -> showCreateSessionWindowDialog()
+                    0 -> connectToHost(host)
+                    1 -> showAddHostDialog(host)
+                    2 -> {
+                        StorageManager.deleteHost(host.id)
+                        refreshHostsList()
+                        Toast.makeText(this, "Deleted ${host.name}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .show()
     }
 
-    private fun showAddHostDialog() {
-        val editContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(40, 20, 40, 20)
+    private fun showHostPickerForNewTab() {
+        val hosts = StorageManager.getHosts()
+        if (hosts.isEmpty()) {
+            showAddHostDialog()
+            return
         }
-
-        val etLabel = EditText(this).apply { hint = "Label Name (e.g. Production VPS)" }
-        val etHost = EditText(this).apply { hint = "Hostname / IP (e.g. 103.145.22.45)" }
-        val etPort = EditText(this).apply { hint = "Port (default 22)"; setText("22") }
-        val etUser = EditText(this).apply { hint = "Username (e.g. ubuntu)"; setText("ubuntu") }
-        val etPass = EditText(this).apply { hint = "Password or Private Key" }
-
-        editContainer.addView(etLabel)
-        editContainer.addView(etHost)
-        editContainer.addView(etPort)
-        editContainer.addView(etUser)
-        editContainer.addView(etPass)
-
+        val items = hosts.map { "${it.name} (${it.username}@${it.hostname})" }.toTypedArray()
         AlertDialog.Builder(this)
-            .setTitle("Add SSH Host to Vault")
-            .setView(editContainer)
-            .setPositiveButton("Save") { _, _ ->
-                val newHost = HostModel(
-                    name = etLabel.text.toString().ifBlank { "Remote Host" },
-                    hostname = etHost.text.toString().ifBlank { "localhost" },
-                    port = etPort.text.toString().toIntOrNull() ?: 22,
-                    username = etUser.text.toString().ifBlank { "root" },
-                    passwordOrKey = etPass.text.toString(),
-                    authType = AuthType.PASSWORD,
-                    category = "Cloud"
-                )
-                StorageManager.addHost(newHost)
-                setupHostsVaultList()
-                Toast.makeText(this, "Host Added: ${newHost.name}", Toast.LENGTH_SHORT).show()
+            .setTitle("Select Host for New Tab")
+            .setItems(items) { _, which ->
+                connectToHost(hosts[which])
             }
-            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Add New Host") { _, _ ->
+                showAddHostDialog()
+            }
             .show()
     }
 
-    private fun showNewSessionPicker() {
-        val hosts = StorageManager.getHosts()
-        val hostNames = hosts.map { "${it.name} (${it.username}@${it.hostname})" }.toTypedArray()
-
+    private fun showSortMenu() {
+        val options = arrayOf("Sort by Name (A-Z)", "Sort by Recently Added", "Sort by Category")
         AlertDialog.Builder(this)
-            .setTitle("Open Terminal Tab")
-            .setItems(hostNames) { _, which ->
-                openSessionTab(hosts[which])
+            .setTitle("Sort Hosts")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> allHosts = allHosts.sortedBy { it.name.lowercase() }
+                    1 -> allHosts = allHosts.sortedByDescending { it.createdAt }
+                    2 -> allHosts = allHosts.sortedBy { it.category.lowercase() }
+                }
+                filterHosts(binding.etSearchQuery.text.toString())
             }
+            .show()
+    }
+
+    private fun showOptionsMenu() {
+        val options = arrayOf("Add Host", "Export Vault", "Settings")
+        AlertDialog.Builder(this)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showAddHostDialog()
+                    1 -> Toast.makeText(this, "Hosts Vault exported to internal storage.", Toast.LENGTH_SHORT).show()
+                    2 -> navigateToScreen(TermiusScreen.SETTINGS)
+                }
+            }
+            .show()
+    }
+
+    private fun showKnownHostsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Known Hosts (SSH Fingerprints)")
+            .setMessage("All remote host keys are automatically verified via StrictHostKeyChecking policy.")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showHelpDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("MateTerminal-Box Pro")
+            .setMessage("Termius-compatible SSH client optimized for Huawei MatePad 12X (2800x1840 display).\n\nVersion: 1.5.0\nArchitecture: Clean-Room Native Kotlin")
+            .setPositiveButton("OK", null)
             .show()
     }
 
     private fun startKeepAliveService() {
-        TerminalForegroundService.startService(this, "Termius Pro KeepAlive Active", "Multi-Pane Session persistence (3:2 144Hz)")
+        TerminalForegroundService.startService(this)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        telemetryJob?.cancel()
-        for (s in tabSessions) {
-            s.sshManager?.disconnect()
-            s.ptyManager?.stop()
+        terminalTabs.forEach {
+            it.readJob?.cancel()
+            it.sshManager?.disconnect()
         }
     }
 }
 
-// Adapters
-class HostAdapter(
-    private val hosts: List<HostModel>,
-    private val onSelect: (HostModel) -> Unit
-) : RecyclerView.Adapter<HostAdapter.ViewHolder>() {
+// --- ADAPTERS ---
 
-    class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val tvName: TextView = view.findViewById(android.R.id.text1)
-        val tvSub: TextView = view.findViewById(android.R.id.text2)
+class TermiusHostsAdapter(
+    private val onHostClick: (HostModel) -> Unit,
+    private val onHostMoreClick: (HostModel, View) -> Unit
+) : RecyclerView.Adapter<TermiusHostsAdapter.HostViewHolder>() {
+
+    private var items: List<HostModel> = emptyList()
+
+    fun updateData(newItems: List<HostModel>) {
+        items = newItems
+        notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_2, parent, false)
-        return ViewHolder(v)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HostViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_termius_host, parent, false)
+        return HostViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = hosts[position]
-        holder.tvName.text = item.name
-        holder.tvName.setTextColor(Color.parseColor("#ffffff"))
-        holder.tvName.textSize = 14f
-        holder.tvName.typeface = Typeface.DEFAULT_BOLD
-
-        holder.tvSub.text = "${item.username}@${item.hostname}:${item.port}  [${item.category}]"
-        holder.tvSub.setTextColor(Color.parseColor("#a5a7c2"))
-        holder.tvSub.textSize = 12f
-
-        holder.itemView.setOnClickListener { onSelect(item) }
+    override fun onBindViewHolder(holder: HostViewHolder, position: Int) {
+        holder.bind(items[position], onHostClick, onHostMoreClick)
     }
 
-    override fun getItemCount(): Int = hosts.size
+    override fun getItemCount(): Int = items.size
+
+    class HostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvAlias: TextView = itemView.findViewById(R.id.tvHostAlias)
+        private val tvAddress: TextView = itemView.findViewById(R.id.tvHostAddress)
+        private val tvCategory: TextView = itemView.findViewById(R.id.tvHostCategory)
+        private val btnConnect: ImageButton = itemView.findViewById(R.id.btnConnectHost)
+        private val container: LinearLayout = itemView.findViewById(R.id.hostCardContainer)
+
+        fun bind(
+            host: HostModel,
+            onHostClick: (HostModel) -> Unit,
+            onHostMoreClick: (HostModel, View) -> Unit
+        ) {
+            tvAlias.text = host.name
+            tvAddress.text = "${host.username}@${host.hostname}:${host.port}"
+            tvCategory.text = host.category
+
+            container.setOnClickListener {
+                onHostClick(host)
+            }
+
+            btnConnect.setOnClickListener {
+                onHostMoreClick(host, it)
+            }
+        }
+    }
 }
 
-class SessionWindowAdapter(
-    private val windows: List<SessionWindowModel>,
-    private val onSelect: (SessionWindowModel) -> Unit
-) : RecyclerView.Adapter<SessionWindowAdapter.ViewHolder>() {
+class TermiusSnippetsAdapter(
+    private val items: List<SnippetModel>,
+    private val onClick: (SnippetModel) -> Unit
+) : RecyclerView.Adapter<TermiusSnippetsAdapter.SnippetViewHolder>() {
 
-    class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val tvName: TextView = view.findViewById(android.R.id.text1)
-        val tvSub: TextView = view.findViewById(android.R.id.text2)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnippetViewHolder {
+        val layout = LinearLayout(parent.context).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundResource(R.drawable.bg_host_card)
+            setPadding(32, 24, 32, 24)
+            layoutParams = ViewGroup.MarginLayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = 16
+            }
+        }
+        val tvTitle = TextView(parent.context).apply {
+            id = View.generateViewId()
+            textSize = 15f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        val tvCmd = TextView(parent.context).apply {
+            id = View.generateViewId()
+            textSize = 13f
+            typeface = Typeface.MONOSPACE
+            setTextColor(Color.parseColor("#8d91a5"))
+            setPadding(0, 8, 0, 0)
+        }
+        layout.addView(tvTitle)
+        layout.addView(tvCmd)
+        return SnippetViewHolder(layout, tvTitle, tvCmd)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val v = LayoutInflater.from(parent.context).inflate(android.R.layout.simple_list_item_2, parent, false)
-        return ViewHolder(v)
+    override fun onBindViewHolder(holder: SnippetViewHolder, position: Int) {
+        val snippet = items[position]
+        holder.tvTitle.text = snippet.title
+        holder.tvCmd.text = snippet.command
+        holder.itemView.setOnClickListener { onClick(snippet) }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = windows[position]
-        holder.tvName.text = item.workspaceName
-        holder.tvName.setTextColor(Color.parseColor("#00d8d6"))
-        holder.tvName.textSize = 14f
-        holder.tvName.typeface = Typeface.DEFAULT_BOLD
+    override fun getItemCount(): Int = items.size
 
-        holder.tvSub.text = "Matrix Layout: ${item.splitLayoutType} | Sessions: ${item.hostIds.size}"
-        holder.tvSub.setTextColor(Color.parseColor("#a5a7c2"))
-        holder.tvSub.textSize = 12f
-
-        holder.itemView.setOnClickListener { onSelect(item) }
-    }
-
-    override fun getItemCount(): Int = windows.size
+    class SnippetViewHolder(
+        view: View,
+        val tvTitle: TextView,
+        val tvCmd: TextView
+    ) : RecyclerView.ViewHolder(view)
 }

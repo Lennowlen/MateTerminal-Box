@@ -5,934 +5,1078 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary">
+    android:background="@color/palette_dark_grey_1">
 
-    <!-- Main Tablet Workspace Container -->
-    <LinearLayout
-        android:id="@+id/mainContent"
+    <!-- MAIN SCREEN CONTAINER -->
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/bg_primary">
+        android:background="@color/palette_dark_grey_1">
 
-        <!-- Termius Pro Top App Bar -->
         <LinearLayout
-            android:id="@+id/topAppBar"
+            android:id="@+id/mainLayout"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:orientation="horizontal"
-            android:background="@color/bg_appbar"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <!-- Drawer Menu Toggle Button -->
-            <ImageButton
-                android:id="@+id/btnOpenDrawer"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_menu_drawer"
-                app:tint="@color/text_primary"
-                android:contentDescription="Menu" />
-
-            <!-- Brand Icon & Label -->
-            <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/ic_app_launcher"
-                android:contentDescription="Termius Pro Logo" />
-
-            <TextView
-                android:id="@+id/tvAppTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Termius Pro"
-                android:textColor="@color/text_primary"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <!-- Pro Gold Badge -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/bg_pro_badge"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:text="PRO"
-                android:textColor="#0b0c16"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <!-- Spacer -->
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <!-- Session Window Mode Split Selectors -->
+            <!-- TERMIUS TOP APP BAR -->
             <LinearLayout
-                android:id="@+id/sessionWindowSelectors"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:id="@+id/termiusTopBar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@color/palette_dark_grey_2"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:background="@color/bg_secondary"
-                android:padding="2dp"
-                android:layout_marginEnd="10dp">
+                android:paddingHorizontal="12dp">
 
+                <!-- Drawer Toggle Button -->
                 <ImageButton
-                    android:id="@+id/btnModeSingle"
-                    android:layout_width="36dp"
-                    android:layout_height="match_parent"
-                    android:background="@color/bg_card_active"
-                    android:src="@drawable/ic_window_single"
-                    app:tint="@color/accent_termius"
-                    android:contentDescription="1x1 Single" />
+                    android:id="@+id/btnNavDrawer"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_menu_drawer"
+                    app:tint="@color/palette_white"
+                    android:contentDescription="Drawer" />
 
-                <ImageButton
-                    android:id="@+id/btnModeDualH"
-                    android:layout_width="36dp"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_window_split_h"
-                    app:tint="@color/text_secondary"
-                    android:contentDescription="1x2 Split H" />
-
-                <ImageButton
-                    android:id="@+id/btnModeDualV"
-                    android:layout_width="36dp"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_window_split_v"
-                    app:tint="@color/text_secondary"
-                    android:contentDescription="2x1 Split V" />
-
-                <ImageButton
-                    android:id="@+id/btnModeQuad"
-                    android:layout_width="36dp"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_window_quad"
-                    app:tint="@color/text_secondary"
-                    android:contentDescription="2x2 Quad Matrix" />
-
-                <ImageButton
-                    android:id="@+id/btnModePip"
-                    android:layout_width="36dp"
-                    android:layout_height="match_parent"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_window_pip"
-                    app:tint="@color/text_secondary"
-                    android:contentDescription="Floating PiP" />
-            </LinearLayout>
-
-            <!-- Quick Add Session / Host Button -->
-            <ImageButton
-                android:id="@+id/btnTopAdd"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_add"
-                app:tint="@color/accent_termius"
-                android:contentDescription="Add New" />
-        </LinearLayout>
-
-        <!-- Secondary Tab Strip (For Active Sessions in Current Window) -->
-        <LinearLayout
-            android:id="@+id/sessionTabsStrip"
-            android:layout_width="match_parent"
-            android:layout_height="38dp"
-            android:orientation="horizontal"
-            android:background="@color/bg_secondary"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="6dp">
-
-            <HorizontalScrollView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:scrollbars="none">
-
+                <!-- Screen Title / Vault Selector -->
                 <LinearLayout
-                    android:id="@+id/tabLayoutContainer"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/vaultSelectorHeader"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical" />
-            </HorizontalScrollView>
-
-            <ImageButton
-                android:id="@+id/btnStripNewTab"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_add"
-                app:tint="@color/text_secondary"
-                android:contentDescription="New Tab" />
-        </LinearLayout>
-
-        <!-- Workspace Viewport Frame (Switches between Terminal Session Window, ServerBox HUD, Hosts Vault, and Session Window Manager) -->
-        <FrameLayout
-            android:id="@+id/viewportFrame"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <!-- 1. Termius Pro Multi-Pane Session Window Container -->
-            <LinearLayout
-                android:id="@+id/paneContainerGrid"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:background="@color/bg_primary"
-                android:padding="4dp">
-
-                <!-- Top Row (Contains Pane 1 and Pane 2) -->
-                <LinearLayout
-                    android:id="@+id/rowTopPanes"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <!-- Pane 1 (Primary) -->
-                    <LinearLayout
-                        android:id="@+id/cardPane1"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_window_active"
-                        android:layout_margin="3dp">
-
-                        <!-- Pane 1 Header Bar -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="28dp"
-                            android:orientation="horizontal"
-                            android:background="@color/window_header_active"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="8dp">
-
-                            <TextView
-                                android:id="@+id/tvPane1Title"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Pane 1: Local Terminal"
-                                android:textColor="@color/accent_cyan"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
-
-                            <ImageButton
-                                android:id="@+id/btnClosePane1"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@drawable/ic_close"
-                                app:tint="@color/text_muted"
-                                android:contentDescription="Close" />
-                        </LinearLayout>
-
-                        <!-- Monospace Terminal Screen 1 -->
-                        <TextView
-                            android:id="@+id/tvTerminalOutput1"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:padding="8dp"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:fontFamily="monospace"
-                            android:scrollbars="vertical" />
-                    </LinearLayout>
-
-                    <!-- Pane 2 (Secondary Horizontal / Quad) -->
-                    <LinearLayout
-                        android:id="@+id/cardPane2"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_window_inactive"
-                        android:layout_margin="3dp"
-                        android:visibility="gone">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="28dp"
-                            android:orientation="horizontal"
-                            android:background="@color/window_header_inactive"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="8dp">
-
-                            <TextView
-                                android:id="@+id/tvPane2Title"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Pane 2: Remote VPS"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-
-                            <ImageButton
-                                android:id="@+id/btnClosePane2"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@drawable/ic_close"
-                                app:tint="@color/text_muted"
-                                android:contentDescription="Close" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvTerminalOutput2"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:padding="8dp"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:fontFamily="monospace"
-                            android:scrollbars="vertical" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Bottom Row (For Vertical Split & 2x2 Quad Matrix) -->
-                <LinearLayout
-                    android:id="@+id/rowBottomPanes"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <!-- Pane 3 -->
-                    <LinearLayout
-                        android:id="@+id/cardPane3"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_window_inactive"
-                        android:layout_margin="3dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="28dp"
-                            android:orientation="horizontal"
-                            android:background="@color/window_header_inactive"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="8dp">
-
-                            <TextView
-                                android:id="@+id/tvPane3Title"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Pane 3: Telemetry Stream"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-
-                            <ImageButton
-                                android:id="@+id/btnClosePane3"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@drawable/ic_close"
-                                app:tint="@color/text_muted"
-                                android:contentDescription="Close" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvTerminalOutput3"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:padding="8dp"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:fontFamily="monospace"
-                            android:scrollbars="vertical" />
-                    </LinearLayout>
-
-                    <!-- Pane 4 -->
-                    <LinearLayout
-                        android:id="@+id/cardPane4"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_window_inactive"
-                        android:layout_margin="3dp"
-                        android:visibility="gone">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="28dp"
-                            android:orientation="horizontal"
-                            android:background="@color/window_header_inactive"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="8dp">
-
-                            <TextView
-                                android:id="@+id/tvPane4Title"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Pane 4: Microservice Logs"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-
-                            <ImageButton
-                                android:id="@+id/btnClosePane4"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@drawable/ic_close"
-                                app:tint="@color/text_muted"
-                                android:contentDescription="Close" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvTerminalOutput4"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:padding="8dp"
-                            android:textColor="@color/text_primary"
-                            android:textSize="13sp"
-                            android:fontFamily="monospace"
-                            android:scrollbars="vertical" />
-                    </LinearLayout>
-                </LinearLayout>
-            </LinearLayout>
-
-            <!-- 2. Termius Hosts Vault & Saved Sessions Screen -->
-            <LinearLayout
-                android:id="@+id/viewHostsVault"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:background="@color/bg_primary"
-                android:padding="20dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingBottom="16dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="SSH &amp; Local Hosts Vault"
-                        android:textColor="@color/text_primary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnVaultNewHost"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="+ New Host"
-                        android:textColor="#ffffff"
-                        android:backgroundTint="@color/accent_termius"
-                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvVaultHosts"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <!-- 3. Termius Pro Session Window Manager (Saved Workspaces / Multi-Pane Matrices) -->
-            <LinearLayout
-                android:id="@+id/viewSessionWindowManager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:background="@color/bg_primary"
-                android:padding="20dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingBottom="16dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Termius Pro Session Windows"
-                        android:textColor="@color/text_primary"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnNewSessionWindow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:text="+ New Session Window"
-                        android:textColor="#ffffff"
-                        android:backgroundTint="@color/accent_termius"
-                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSessionWindows"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <!-- 4. ServerBox Live System Telemetry HUD -->
-            <ScrollView
-                android:id="@+id/viewServerBoxHud"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/bg_primary"
-                android:padding="20dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvHeaderTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ServerBox Live Telemetry Matrix"
-                        android:textColor="@color/text_primary"
-                        android:textSize="20sp"
+                        android:text="Hosts"
+                        android:textColor="@color/palette_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/vaultSubHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvVaultName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Personal Vault"
+                            android:textColor="@color/palette_dark_grey_7"
+                            android:textSize="12sp" />
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_marginStart="2dp"
+                            android:src="@drawable/ic_chevron_down"
+                            app:tint="@color/palette_dark_grey_7"
+                            android:contentDescription="Dropdown" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Action: Search -->
+                <ImageButton
+                    android:id="@+id/btnTopSearch"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/palette_white"
+                    android:contentDescription="Search" />
+
+                <!-- Action: Sort -->
+                <ImageButton
+                    android:id="@+id/btnTopSort"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_sort"
+                    app:tint="@color/palette_white"
+                    android:contentDescription="Sort" />
+
+                <!-- Action: Overflow / Options -->
+                <ImageButton
+                    android:id="@+id/btnTopMore"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="@color/palette_white"
+                    android:contentDescription="More" />
+            </LinearLayout>
+
+            <!-- TERMIUS SEARCH BAR ROW (Filterable) -->
+            <LinearLayout
+                android:id="@+id/searchBarContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/palette_dark_grey_2"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_host_card"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="@color/palette_dark_grey_7" />
+
+                    <EditText
+                        android:id="@+id/etSearchQuery"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Search hosts, tags, or addresses..."
+                        android:textColor="@color/palette_white"
+                        android:textColorHint="@color/palette_dark_grey_7"
+                        android:textSize="14sp"
+                        android:singleLine="true" />
+
+                    <ImageButton
+                        android:id="@+id/btnClearSearch"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_close"
+                        app:tint="@color/palette_dark_grey_7" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- MAIN VIEWPORT CONTAINER -->
+            <FrameLayout
+                android:id="@+id/viewportContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <!-- 1. HOSTS VAULT VIEW -->
+                <RelativeLayout
+                    android:id="@+id/viewHostsVault"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="visible">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvHostsList"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToPadding="false"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="88dp" />
+
+                    <!-- Empty State View -->
+                    <LinearLayout
+                        android:id="@+id/emptyHostsView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="24dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:src="@drawable/ic_app_launcher"
+                            app:tint="@color/palette_dark_grey_6" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="No Hosts Configured"
+                            android:textColor="@color/palette_white"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center"
+                            android:text="Tap the '+' button below to add your first SSH host."
+                            android:textColor="@color/palette_dark_grey_7"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <!-- Termius FAB (Add Host Button) -->
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fabAddHost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_margin="24dp"
+                        android:backgroundTint="@color/palette_blue"
+                        android:contentDescription="New Host"
+                        android:src="@drawable/ic_add"
+                        app:elevation="6dp"
+                        app:fabSize="normal"
+                        app:tint="@color/palette_white" />
+                </RelativeLayout>
+
+                <!-- 2. TERMINAL (SSH ACTIVE SESSIONS) VIEW -->
+                <LinearLayout
+                    android:id="@+id/viewTerminalSession"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- Termius Terminal Tabs Strip -->
+                    <HorizontalScrollView
+                        android:id="@+id/tabScrollView"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:background="@color/palette_dark_grey_2"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/terminalTabContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="6dp">
+
+                            <!-- Dynamic tabs are injected here -->
+
+                            <!-- New Connection Button -->
+                            <ImageButton
+                                android:id="@+id/btnAddNewTerminalTab"
+                                android:layout_width="38dp"
+                                android:layout_height="34dp"
+                                android:layout_marginStart="4dp"
+                                android:background="@drawable/bg_host_tag"
+                                android:src="@drawable/ic_add"
+                                app:tint="@color/palette_dark_grey_7"
+                                android:contentDescription="Add Tab" />
+                        </LinearLayout>
+                    </HorizontalScrollView>
+
+                    <!-- Terminal Screen Body -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:background="@color/palette_dark_grey_1">
+
+                        <ScrollView
+                            android:id="@+id/terminalScrollView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:fillViewport="true"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:id="@+id/tvTerminalOutput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="monospace"
+                                android:lineSpacingExtra="3dp"
+                                android:textIsSelectable="true"
+                                android:textColor="@color/palette_white"
+                                android:textSize="13sp"
+                                tools:text="Connecting to ubuntu@103.145.22.45:22...\nSSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.6\nLast login: Thu Oct 1 07:15:00 2026\nubuntu@production-vps:~$ " />
+                        </ScrollView>
+
+                        <!-- Disconnected Banner Overlay -->
+                        <LinearLayout
+                            android:id="@+id/disconnectedOverlay"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top"
+                            android:background="#cc141729"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="10dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/tvDisconnectStatus"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Session Disconnected."
+                                android:textColor="@color/palette_red_light"
+                                android:textSize="13sp" />
+
+                            <Button
+                                android:id="@+id/btnReconnect"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:backgroundTint="@color/palette_blue"
+                                android:paddingHorizontal="12dp"
+                                android:text="Reconnect"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Hidden Input / Command Line Dispatcher -->
+                    <LinearLayout
+                        android:id="@+id/terminalInputBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:background="@color/palette_dark_grey_2"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="10dp">
+
+                        <TextView
+                            android:id="@+id/tvInputPrompt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ssh> "
+                            android:textColor="@color/palette_blue"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace"
+                            android:textSize="13sp" />
+
+                        <EditText
+                            android:id="@+id/etTerminalInput"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:fontFamily="monospace"
+                            android:hint="Type command or send key..."
+                            android:imeOptions="actionSend"
+                            android:inputType="text|textNoSuggestions"
+                            android:singleLine="true"
+                            android:textColor="@color/palette_white"
+                            android:textColorHint="@color/palette_dark_grey_7"
+                            android:textSize="13sp" />
+
+                        <ImageButton
+                            android:id="@+id/btnSendInput"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/palette_blue"
+                            android:contentDescription="Send" />
+                    </LinearLayout>
+
+                    <!-- TERMIUS BOTTOM ACCESSORY KEYBAR -->
+                    <HorizontalScrollView
+                        android:id="@+id/accessoryKeybarScroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp"
+                        android:background="@color/palette_dark_grey_3"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/accessoryKeybar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="6dp">
+
+                            <Button
+                                android:id="@+id/keyEsc"
+                                android:layout_width="48dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="ESC"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyTab"
+                                android:layout_width="48dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="TAB"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyCtrl"
+                                android:layout_width="48dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="CTRL"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyAlt"
+                                android:layout_width="48dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="ALT"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyPipe"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="|"
+                                android:textColor="@color/palette_white"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/keySlash"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="/"
+                                android:textColor="@color/palette_white"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/keyHyphen"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="-"
+                                android:textColor="@color/palette_white"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/keyTilde"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="~"
+                                android:textColor="@color/palette_white"
+                                android:textSize="14sp" />
+
+                            <Button
+                                android:id="@+id/keyUp"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="▲"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyDown"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="▼"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyLeft"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="◀"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/keyRight"
+                                android:layout_width="38dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="4dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:text="▶"
+                                android:textColor="@color/palette_white"
+                                android:textSize="12sp" />
+
+                            <Button
+                                android:id="@+id/btnKeySnippets"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:background="@drawable/bg_termius_key_chip"
+                                android:fontFamily="monospace"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="0dp"
+                                android:text="SNIPPETS"
+                                android:textColor="@color/palette_blue_light"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </HorizontalScrollView>
+                </LinearLayout>
+
+                <!-- 3. SNIPPETS VIEW -->
+                <LinearLayout
+                    android:id="@+id/viewSnippets"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Snippets Repository"
+                        android:textColor="@color/palette_white"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/tvServerBoxTarget"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Selected Host: Production VPS"
-                        android:textColor="@color/accent_cyan"
-                        android:textSize="13sp"
-                        android:paddingBottom="16dp" />
+                        android:layout_marginTop="4dp"
+                        android:text="Tap snippet to paste into active terminal session."
+                        android:textColor="@color/palette_dark_grey_7"
+                        android:textSize="13sp" />
 
-                    <!-- Metrics Grid (Cards) -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSnippetsList"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_weight="1" />
+                </LinearLayout>
+
+                <!-- 4. SFTP VIEW -->
+                <LinearLayout
+                    android:id="@+id/viewSFTP"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_nav_drawer_sftp"
+                        app:tint="@color/palette_blue" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="SFTP File Browser"
+                        android:textColor="@color/palette_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="Select an active SSH host to browse, upload, and download remote server files."
+                        android:textColor="@color/palette_dark_grey_7"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- 5. SETTINGS VIEW -->
+                <ScrollView
+                    android:id="@+id/viewSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical">
 
-                        <!-- CPU Load Card -->
-                        <androidx.cardview.widget.CardView
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Appearance &amp; Terminal"
+                            android:textColor="@color/palette_blue"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_host_card"
+                            android:orientation="vertical"
+                            android:padding="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Color Theme: Midnight Pro"
+                                android:textColor="@color/palette_white"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Official Termius 64 Color Schemes"
+                                android:textColor="@color/palette_dark_grey_7"
+                                android:textSize="12sp" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginVertical="10dp"
+                                android:background="@color/palette_dark_grey_4" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Font: JetBrains Mono (11 Nerd Fonts)"
+                                android:textColor="@color/palette_white"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Crisp tablet typography rendering"
+                                android:textColor="@color/palette_dark_grey_7"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:text="About Termius Pro"
+                            android:textColor="@color/palette_blue"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_host_card"
+                            android:orientation="vertical"
+                            android:padding="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="MateTerminal-Box • Termius Pro Edition"
+                                android:textColor="@color/palette_white"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Optimized for Huawei MatePad 12X (3:2 144Hz Display)\nVersion 1.6.0 (Build 160)"
+                                android:textColor="@color/palette_dark_grey_7"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </ScrollView>
+            </FrameLayout>
+        </LinearLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <!-- TERMIUS NAVIGATION DRAWER -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/palette_dark_grey_2"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- Drawer Header (Account & Vault) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/palette_dark_grey_1"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Avatar & Brand -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_fab_termius"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_app_launcher"
+                            android:contentDescription="User Avatar" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Personal Vault"
+                            android:textColor="@color/palette_white"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Termius Pro • Local Vault"
+                            android:textColor="@color/palette_blue_light"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Menu Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/palette_dark_grey_4" />
+
+            <!-- Drawer Nav Items List -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingVertical="8dp">
+
+                    <!-- Hosts -->
+                    <LinearLayout
+                        android:id="@+id/navItemHosts"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_host"
+                            app:tint="@color/palette_blue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Hosts"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Terminals -->
+                    <LinearLayout
+                        android:id="@+id/navItemTerminals"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_terminals"
+                            app:tint="@color/palette_dark_grey_7" />
+
+                        <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
-                            android:layout_marginEnd="10dp"
-                            app:cardCornerRadius="10dp"
-                            app:cardBackgroundColor="@color/bg_card">
+                            android:text="Terminals"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="16dp">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="CPU LOAD"
-                                    android:textColor="@color/text_muted"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/tvCpuPercent"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="28.4%"
-                                    android:textColor="@color/accent_cyan"
-                                    android:textSize="26sp"
-                                    android:textStyle="bold" />
-
-                                <ProgressBar
-                                    android:id="@+id/pbCpu"
-                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="6dp"
-                                    android:progress="28"
-                                    android:progressTint="@color/accent_cyan" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Memory Card -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvNavTerminalBadge"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="10dp"
-                            app:cardCornerRadius="10dp"
-                            app:cardBackgroundColor="@color/bg_card">
+                            android:background="@drawable/bg_host_tag"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="2dp"
+                            android:text="0"
+                            android:textColor="@color/palette_blue_light"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="16dp">
+                    <!-- SFTP -->
+                    <LinearLayout
+                        android:id="@+id/navItemSFTP"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="RAM &amp; SWAP USAGE"
-                                    android:textColor="@color/text_muted"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_sftp"
+                            app:tint="@color/palette_dark_grey_7" />
 
-                                <TextView
-                                    android:id="@+id/tvMemPercent"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="3.9 GB / 8.0 GB (49%)"
-                                    android:textColor="@color/accent_emerald"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold" />
-
-                                <ProgressBar
-                                    android:id="@+id/pbMem"
-                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="6dp"
-                                    android:progress="49"
-                                    android:progressTint="@color/accent_emerald" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Network I/O Card -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="10dp"
-                            app:cardBackgroundColor="@color/bg_card">
+                            android:layout_marginStart="16dp"
+                            android:text="SFTP"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
+                    </LinearLayout>
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="16dp">
+                    <!-- Port Forwarding -->
+                    <LinearLayout
+                        android:id="@+id/navItemPortForwarding"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="NETWORK TRAFFIC &amp; UPTIME"
-                                    android:textColor="@color/text_muted"
-                                    android:textSize="11sp"
-                                    android:textStyle="bold" />
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_pf"
+                            app:tint="@color/palette_dark_grey_7" />
 
-                                <TextView
-                                    android:id="@+id/tvNetSpeed"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="RX: 2.1 MB/s | TX: 410 KB/s"
-                                    android:textColor="@color/accent_amber"
-                                    android:textSize="14sp"
-                                    android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Port forwarding"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
+                    </LinearLayout>
 
-                                <TextView
-                                    android:id="@+id/tvUptime"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Uptime: 48 days, 14 hours"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"
-                                    android:paddingTop="4dp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
+                    <!-- Snippets -->
+                    <LinearLayout
+                        android:id="@+id/navItemSnippets"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_snippets"
+                            app:tint="@color/palette_dark_grey_7" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Snippets"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <!-- Known Hosts -->
+                    <LinearLayout
+                        android:id="@+id/navItemKnownHosts"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_known_hosts"
+                            app:tint="@color/palette_dark_grey_7" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Known hosts"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="8dp"
+                        android:background="@color/palette_dark_grey_4" />
+
+                    <!-- Settings -->
+                    <LinearLayout
+                        android:id="@+id/navItemSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_settings"
+                            app:tint="@color/palette_dark_grey_7" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Settings"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <!-- Help & Feedback -->
+                    <LinearLayout
+                        android:id="@+id/navItemHelp"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="20dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:src="@drawable/ic_nav_drawer_help"
+                            app:tint="@color/palette_dark_grey_7" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="Help &amp; feedback"
+                            android:textColor="@color/palette_white"
+                            android:textSize="15sp" />
                     </LinearLayout>
                 </LinearLayout>
             </ScrollView>
-        </FrameLayout>
-
-        <!-- Termius Pro Accessory Keybar -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:background="@color/bg_keybar"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="8dp">
-
-                <Button android:id="@+id/keyEsc" android:layout_width="56dp" android:layout_height="34dp" android:text="ESC" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyTab" android:layout_width="56dp" android:layout_height="34dp" android:text="TAB" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyCtrl" android:layout_width="56dp" android:layout_height="34dp" android:text="CTRL" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyAlt" android:layout_width="56dp" android:layout_height="34dp" android:text="ALT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyPipe" android:layout_width="44dp" android:layout_height="34dp" android:text="|" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyTilde" android:layout_width="44dp" android:layout_height="34dp" android:text="~" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keySlash" android:layout_width="44dp" android:layout_height="34dp" android:text="/" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyHyphen" android:layout_width="44dp" android:layout_height="34dp" android:text="-" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyUp" android:layout_width="46dp" android:layout_height="34dp" android:text="UP" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyDown" android:layout_width="46dp" android:layout_height="34dp" android:text="DN" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyLeft" android:layout_width="46dp" android:layout_height="34dp" android:text="LT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyRight" android:layout_width="46dp" android:layout_height="34dp" android:text="RT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" />
-            </LinearLayout>
-        </HorizontalScrollView>
-    </LinearLayout>
-
-    <!-- Termius Pro Sidebar Navigation Drawer (Slide-in / Left Panel) -->
-    <LinearLayout
-        android:id="@+id/navigationDrawer"
-        android:layout_width="320dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:orientation="vertical"
-        android:background="@color/bg_sidebar"
-        android:padding="16dp">
-
-        <!-- Drawer Header Profile -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@color/bg_drawer_header"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp">
-
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_app_launcher"
-                android:contentDescription="Termius Pro Avatar" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="12dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Termius Pro Edition"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Huawei MatePad 12X (3:2 144Hz)"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp" />
-            </LinearLayout>
         </LinearLayout>
-
-        <!-- Navigation Menu Items (Authentic Termius Pro Sections) -->
-        <!-- 1. Terminal / Active Session Windows -->
-        <LinearLayout
-            android:id="@+id/drawerItemTerminal"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_terminal"
-                app:tint="@color/accent_termius"
-                android:contentDescription="Terminal" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="Active Terminal"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- 2. Session Windows (Pro Multi-Pane Manager) -->
-        <LinearLayout
-            android:id="@+id/drawerItemSessionWindows"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_session_windows"
-                app:tint="@color/accent_cyan"
-                android:contentDescription="Session Windows" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="Session Windows"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_pro_badge"
-                android:paddingHorizontal="5dp"
-                android:paddingVertical="1dp"
-                android:text="PRO"
-                android:textColor="#0b0c16"
-                android:textSize="9sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- 3. Hosts (Vault) -->
-        <LinearLayout
-            android:id="@+id/drawerItemHosts"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_hosts"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Hosts" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="Hosts Vault"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- 4. ServerBox Monitoring Matrix -->
-        <LinearLayout
-            android:id="@+id/drawerItemMonitor"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_monitor"
-                app:tint="@color/accent_emerald"
-                android:contentDescription="ServerBox" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="ServerBox Monitor"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- 5. Snippets -->
-        <LinearLayout
-            android:id="@+id/drawerItemSnippets"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_snippets"
-                app:tint="@color/accent_amber"
-                android:contentDescription="Snippets" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="Snippets Library"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-        </LinearLayout>
-
-        <!-- Spacer -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/border_color"
-            android:layout_marginVertical="8dp" />
-
-        <!-- 6. Settings -->
-        <LinearLayout
-            android:id="@+id/drawerItemSettings"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:paddingHorizontal="12dp">
-
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_nav_settings"
-                app:tint="@color/text_secondary"
-                android:contentDescription="Settings" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="14dp"
-                android:text="Settings &amp; Themes"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-        </LinearLayout>
-    </LinearLayout>
+    </com.google.android.material.navigation.NavigationView>
 </androidx.drawerlayout.widget.DrawerLayout>

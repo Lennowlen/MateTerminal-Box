@@ -26,11 +26,11 @@ object RannLabsSyncManager {
             }
 
             val payload = JSONObject().apply {
-                put("device_model", "Huawei MatePad 12X (WGRR-W09)")
+                put("device_model", "Huawei MatePad 12X (LRT-W09)")
                 put("display_spec", "2800x1840@144Hz 3:2")
                 put("harmony_os_version", Build.DISPLAY)
                 put("log_date", dateStr)
-                put("client_version", "1.0.0-pro")
+                put("client_version", "1.5.0-termius")
                 
                 val logsArray = JSONArray()
                 for (item in pendingLogs) {
@@ -70,10 +70,9 @@ object RannLabsSyncManager {
 
             val responseCode = connection.responseCode
             if (responseCode in 200..299) {
-                val syncedIds = pendingLogs.map { it.id }.toSet()
-                StorageManager.markLogsSynced(dateStr, syncedIds)
-                Log.i(TAG, "Successfully synced ${syncedIds.size} logs to Rann-Labs server for $dateStr")
-                Result.success(syncedIds.size)
+                StorageManager.markLogsSynced(pendingLogs)
+                Log.i(TAG, "Successfully synced ${pendingLogs.size} logs to Rann-Labs server for $dateStr")
+                Result.success(pendingLogs.size)
             } else {
                 val errMsg = "HTTP error $responseCode from ${settings.rannLabsServerEndpoint}"
                 Log.e(TAG, errMsg)

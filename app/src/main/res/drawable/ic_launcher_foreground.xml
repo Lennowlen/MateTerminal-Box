@@ -4,26 +4,6 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Background Termius Midnight Navy Gradient -->
-    <group
-        android:scaleX="0.210938"
-        android:scaleY="0.210938">
-        <path android:pathData="M0,0h512v512h-512z">
-            <aapt:attr name="android:fillColor">
-                <gradient
-                    android:type="linear"
-                    android:startX="256"
-                    android:startY="0"
-                    android:endX="256"
-                    android:endY="512">
-                    <item android:color="#FF1C265B" android:offset="0" />
-                    <item android:color="#FF060816" android:offset="1" />
-                </gradient>
-            </aapt:attr>
-        </path>
-    </group>
-
-    <!-- Termius Authentic Cloud Node & Shell Prompt Foreground (Layer 1) -->
     <group
         android:scaleX="0.58"
         android:scaleY="0.58"

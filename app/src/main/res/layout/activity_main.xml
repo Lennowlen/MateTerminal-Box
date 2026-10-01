@@ -1,182 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rootContainer"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="@color/bg_primary"
-    android:baselineAligned="false">
+    android:background="@color/bg_primary">
 
-    <!-- Left Tablet Sidebar (Hosts, Telemetry HUD Toggle, Snippets) -->
+    <!-- Main Tablet Workspace Container -->
     <LinearLayout
-        android:id="@+id/sidebarContainer"
-        android:layout_width="320dp"
+        android:id="@+id/mainContent"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@color/bg_sidebar"
-        android:padding="12dp">
+        android:background="@color/bg_primary">
 
-        <!-- App Brand Header -->
+        <!-- Termius Pro Top App Bar -->
         <LinearLayout
+            android:id="@+id/topAppBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:orientation="horizontal"
+            android:background="@color/bg_appbar"
             android:gravity="center_vertical"
-            android:paddingBottom="12dp">
+            android:paddingHorizontal="12dp">
 
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_app_launcher"
-                android:contentDescription="Logo" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="MateTerminal-Box"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="MatePad 12X Pro Edition"
-                    android:textColor="@color/accent_cyan"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
+            <!-- Drawer Menu Toggle Button -->
             <ImageButton
-                android:id="@+id/btnAddHost"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:id="@+id/btnOpenDrawer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_input_add"
-                app:tint="@color/accent_cyan"
-                android:contentDescription="Add Host" />
-        </LinearLayout>
+                android:src="@drawable/ic_menu_drawer"
+                app:tint="@color/text_primary"
+                android:contentDescription="Menu" />
 
-        <!-- Segmented Mode Navigation: Terminal / ServerBox Monitor / Snippets -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:orientation="horizontal"
-            android:background="@color/bg_secondary"
-            android:layout_marginBottom="12dp"
-            android:padding="2dp">
-
-            <Button
-                android:id="@+id/btnNavHosts"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Hosts"
-                android:textSize="12sp"
-                android:textColor="@color/text_primary"
-                android:backgroundTint="@color/bg_card"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
-
-            <Button
-                android:id="@+id/btnNavMonitor"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1.2"
-                android:text="ServerBox"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:backgroundTint="@android:color/transparent"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-            <Button
-                android:id="@+id/btnNavSnippets"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1.1"
-                android:text="Snippets"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:backgroundTint="@android:color/transparent"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
-        </LinearLayout>
-
-        <!-- Saved Host Profiles List -->
-        <TextView
-            android:id="@+id/tvListHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SAVED SESSIONS"
-            android:textColor="@color/text_muted"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:paddingBottom="6dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvHosts"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scrollbars="vertical" />
-
-        <!-- Footer: Battery / Network status -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="8dp"
-            android:gravity="center_vertical">
+            <!-- Brand Icon & Label -->
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_app_launcher"
+                android:contentDescription="Termius Pro Logo" />
 
             <TextView
-                android:id="@+id/tvDeviceStatus"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="MatePad 12X (3:2 144Hz)"
-                android:textColor="@color/text_muted"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tvKeepaliveIndicator"
+                android:id="@+id/tvAppTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="KEEPALIVE ON"
-                android:textColor="@color/accent_emerald"
+                android:layout_marginStart="10dp"
+                android:text="Termius Pro"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <!-- Pro Gold Badge -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_pro_badge"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="PRO"
+                android:textColor="#0b0c16"
                 android:textSize="10sp"
                 android:textStyle="bold" />
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <!-- Session Window Mode Split Selectors -->
+            <LinearLayout
+                android:id="@+id/sessionWindowSelectors"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:background="@color/bg_secondary"
+                android:padding="2dp"
+                android:layout_marginEnd="10dp">
+
+                <ImageButton
+                    android:id="@+id/btnModeSingle"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/bg_card_active"
+                    android:src="@drawable/ic_window_single"
+                    app:tint="@color/accent_termius"
+                    android:contentDescription="1x1 Single" />
+
+                <ImageButton
+                    android:id="@+id/btnModeDualH"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_window_split_h"
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="1x2 Split H" />
+
+                <ImageButton
+                    android:id="@+id/btnModeDualV"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_window_split_v"
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="2x1 Split V" />
+
+                <ImageButton
+                    android:id="@+id/btnModeQuad"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_window_quad"
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="2x2 Quad Matrix" />
+
+                <ImageButton
+                    android:id="@+id/btnModePip"
+                    android:layout_width="36dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_window_pip"
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="Floating PiP" />
+            </LinearLayout>
+
+            <!-- Quick Add Session / Host Button -->
+            <ImageButton
+                android:id="@+id/btnTopAdd"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_add"
+                app:tint="@color/accent_termius"
+                android:contentDescription="Add New" />
         </LinearLayout>
-    </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:background="@color/border_color" />
-
-    <!-- Right Tablet Workspace (Tabs + Multi-Pane Terminal + ServerBox HUD + Accessory Keybar) -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <!-- Top Tab Bar & Window Split Controls -->
+        <!-- Secondary Tab Strip (For Active Sessions in Current Window) -->
         <LinearLayout
+            android:id="@+id/sessionTabsStrip"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="38dp"
             android:orientation="horizontal"
             android:background="@color/bg_secondary"
             android:gravity="center_vertical"
-            android:paddingHorizontal="8dp">
+            android:paddingHorizontal="6dp">
 
-            <!-- Horizontal Tab Scroll -->
             <HorizontalScrollView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -184,102 +156,354 @@
                 android:scrollbars="none">
 
                 <LinearLayout
-                    android:id="@+id/tabsContainer"
+                    android:id="@+id/tabLayoutContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical" />
             </HorizontalScrollView>
 
-            <!-- New Tab Action -->
             <ImageButton
-                android:id="@+id/btnNewTab"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:id="@+id/btnStripNewTab"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_input_add"
+                android:src="@drawable/ic_add"
                 app:tint="@color/text_secondary"
                 android:contentDescription="New Tab" />
-
-            <!-- Split Screen Options (1x1, 1x2, 2x2) -->
-            <Button
-                android:id="@+id/btnSplitMode"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="Split 1x2"
-                android:textSize="11sp"
-                android:textColor="@color/text_primary"
-                android:backgroundTint="@color/bg_card"
-                android:layout_marginStart="8dp"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
         </LinearLayout>
 
-        <!-- Main Workspace Frame (Switches between Terminal View and ServerBox HUD) -->
+        <!-- Workspace Viewport Frame (Switches between Terminal Session Window, ServerBox HUD, Hosts Vault, and Session Window Manager) -->
         <FrameLayout
-            android:id="@+id/workspaceFrame"
+            android:id="@+id/viewportFrame"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <!-- Terminal Multi-Pane Layout Container -->
+            <!-- 1. Termius Pro Multi-Pane Session Window Container -->
             <LinearLayout
-                android:id="@+id/terminalSplitLayout"
+                android:id="@+id/paneContainerGrid"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:background="@color/bg_primary"
+                android:padding="4dp">
 
-                <!-- Left / Primary Terminal Pane -->
+                <!-- Top Row (Contains Pane 1 and Pane 2) -->
                 <LinearLayout
-                    android:id="@+id/paneLeft"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:id="@+id/rowTopPanes"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@color/bg_terminal"
-                    android:padding="8dp">
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tvTerminalOutput1"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                    <!-- Pane 1 (Primary) -->
+                    <LinearLayout
+                        android:id="@+id/cardPane1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:fontFamily="monospace"
-                        android:scrollbars="vertical" />
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_window_active"
+                        android:layout_margin="3dp">
+
+                        <!-- Pane 1 Header Bar -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="28dp"
+                            android:orientation="horizontal"
+                            android:background="@color/window_header_active"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:id="@+id/tvPane1Title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Pane 1: Local Terminal"
+                                android:textColor="@color/accent_cyan"
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
+
+                            <ImageButton
+                                android:id="@+id/btnClosePane1"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_close"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Close" />
+                        </LinearLayout>
+
+                        <!-- Monospace Terminal Screen 1 -->
+                        <TextView
+                            android:id="@+id/tvTerminalOutput1"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:padding="8dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:fontFamily="monospace"
+                            android:scrollbars="vertical" />
+                    </LinearLayout>
+
+                    <!-- Pane 2 (Secondary Horizontal / Quad) -->
+                    <LinearLayout
+                        android:id="@+id/cardPane2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_window_inactive"
+                        android:layout_margin="3dp"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="28dp"
+                            android:orientation="horizontal"
+                            android:background="@color/window_header_inactive"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:id="@+id/tvPane2Title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Pane 2: Remote VPS"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp" />
+
+                            <ImageButton
+                                android:id="@+id/btnClosePane2"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_close"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Close" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvTerminalOutput2"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:padding="8dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:fontFamily="monospace"
+                            android:scrollbars="vertical" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <!-- Optional Right / Secondary Terminal Pane (for Split 1x2) -->
+                <!-- Bottom Row (For Vertical Split & 2x2 Quad Matrix) -->
                 <LinearLayout
-                    android:id="@+id/paneRight"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:id="@+id/rowBottomPanes"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@color/bg_terminal"
-                    android:padding="8dp"
+                    android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tvTerminalOutput2"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                    <!-- Pane 3 -->
+                    <LinearLayout
+                        android:id="@+id/cardPane3"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:fontFamily="monospace"
-                        android:scrollbars="vertical" />
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_window_inactive"
+                        android:layout_margin="3dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="28dp"
+                            android:orientation="horizontal"
+                            android:background="@color/window_header_inactive"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:id="@+id/tvPane3Title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Pane 3: Telemetry Stream"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp" />
+
+                            <ImageButton
+                                android:id="@+id/btnClosePane3"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_close"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Close" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvTerminalOutput3"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:padding="8dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:fontFamily="monospace"
+                            android:scrollbars="vertical" />
+                    </LinearLayout>
+
+                    <!-- Pane 4 -->
+                    <LinearLayout
+                        android:id="@+id/cardPane4"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_window_inactive"
+                        android:layout_margin="3dp"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="28dp"
+                            android:orientation="horizontal"
+                            android:background="@color/window_header_inactive"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:id="@+id/tvPane4Title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Pane 4: Microservice Logs"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11sp" />
+
+                            <ImageButton
+                                android:id="@+id/btnClosePane4"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_close"
+                                app:tint="@color/text_muted"
+                                android:contentDescription="Close" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvTerminalOutput4"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:padding="8dp"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:fontFamily="monospace"
+                            android:scrollbars="vertical" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ServerBox Live Telemetry HUD Overlay -->
+            <!-- 2. Termius Hosts Vault & Saved Sessions Screen -->
+            <LinearLayout
+                android:id="@+id/viewHostsVault"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@color/bg_primary"
+                android:padding="20dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="SSH &amp; Local Hosts Vault"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnVaultNewHost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="+ New Host"
+                        android:textColor="#ffffff"
+                        android:backgroundTint="@color/accent_termius"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvVaultHosts"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- 3. Termius Pro Session Window Manager (Saved Workspaces / Multi-Pane Matrices) -->
+            <LinearLayout
+                android:id="@+id/viewSessionWindowManager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@color/bg_primary"
+                android:padding="20dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Termius Pro Session Windows"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnNewSessionWindow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="+ New Session Window"
+                        android:textColor="#ffffff"
+                        android:backgroundTint="@color/accent_termius"
+                        style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSessionWindows"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- 4. ServerBox Live System Telemetry HUD -->
             <ScrollView
-                android:id="@+id/serverBoxHudView"
+                android:id="@+id/viewServerBoxHud"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/bg_primary"
-                android:visibility="gone"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -289,40 +513,40 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ServerBox Live Telemetry"
+                        android:text="ServerBox Live Telemetry Matrix"
                         android:textColor="@color/text_primary"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/tvServerBoxHostName"
+                        android:id="@+id/tvServerBoxTarget"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Selected Host: Production VPS (Singapore)"
+                        android:text="Selected Host: Production VPS"
                         android:textColor="@color/accent_cyan"
                         android:textSize="13sp"
                         android:paddingBottom="16dp" />
 
-                    <!-- Metrics Grid (CPU, RAM, Disk, Net) -->
+                    <!-- Metrics Grid (Cards) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <!-- CPU Metric Card -->
+                        <!-- CPU Load Card -->
                         <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:cardCornerRadius="8dp"
+                            android:layout_marginEnd="10dp"
+                            app:cardCornerRadius="10dp"
                             app:cardBackgroundColor="@color/bg_card">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:padding="14dp">
+                                android:padding="16dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
@@ -336,9 +560,9 @@
                                     android:id="@+id/tvCpuPercent"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="24.5%"
+                                    android:text="28.4%"
                                     android:textColor="@color/accent_cyan"
-                                    android:textSize="24sp"
+                                    android:textSize="26sp"
                                     android:textStyle="bold" />
 
                                 <ProgressBar
@@ -346,30 +570,30 @@
                                     style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                                     android:layout_width="match_parent"
                                     android:layout_height="6dp"
-                                    android:progress="25"
+                                    android:progress="28"
                                     android:progressTint="@color/accent_cyan" />
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
 
-                        <!-- RAM Metric Card -->
+                        <!-- Memory Card -->
                         <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            app:cardCornerRadius="8dp"
+                            android:layout_marginEnd="10dp"
+                            app:cardCornerRadius="10dp"
                             app:cardBackgroundColor="@color/bg_card">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:padding="14dp">
+                                android:padding="16dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="MEMORY &amp; SWAP"
+                                    android:text="RAM &amp; SWAP USAGE"
                                     android:textColor="@color/text_muted"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -378,9 +602,9 @@
                                     android:id="@+id/tvMemPercent"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="3.8 GB / 8.0 GB (47%)"
+                                    android:text="3.9 GB / 8.0 GB (49%)"
                                     android:textColor="@color/accent_emerald"
-                                    android:textSize="16sp"
+                                    android:textSize="18sp"
                                     android:textStyle="bold" />
 
                                 <ProgressBar
@@ -388,29 +612,29 @@
                                     style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                                     android:layout_width="match_parent"
                                     android:layout_height="6dp"
-                                    android:progress="47"
+                                    android:progress="49"
                                     android:progressTint="@color/accent_emerald" />
                             </LinearLayout>
                         </androidx.cardview.widget.CardView>
 
-                        <!-- Network I/O Metric Card -->
+                        <!-- Network I/O Card -->
                         <androidx.cardview.widget.CardView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            app:cardCornerRadius="8dp"
+                            app:cardCornerRadius="10dp"
                             app:cardBackgroundColor="@color/bg_card">
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:orientation="vertical"
-                                android:padding="14dp">
+                                android:padding="16dp">
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="NETWORK TRAFFIC"
+                                    android:text="NETWORK TRAFFIC &amp; UPTIME"
                                     android:textColor="@color/text_muted"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -419,7 +643,7 @@
                                     android:id="@+id/tvNetSpeed"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="RX: 1.4 MB/s | TX: 240 KB/s"
+                                    android:text="RX: 2.1 MB/s | TX: 410 KB/s"
                                     android:textColor="@color/accent_amber"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -439,11 +663,11 @@
             </ScrollView>
         </FrameLayout>
 
-        <!-- Bottom Keyboard Accessory Toolbar (Esc, Tab, Ctrl, Alt, Pipe, Arrow Keys) -->
+        <!-- Termius Pro Accessory Keybar -->
         <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@color/bg_sidebar"
+            android:layout_height="44dp"
+            android:background="@color/bg_keybar"
             android:scrollbars="none">
 
             <LinearLayout
@@ -451,21 +675,264 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="6dp">
+                android:paddingHorizontal="8dp">
 
-                <Button android:id="@+id/keyEsc" android:layout_width="54dp" android:layout_height="32dp" android:text="ESC" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyTab" android:layout_width="54dp" android:layout_height="32dp" android:text="TAB" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyCtrl" android:layout_width="54dp" android:layout_height="32dp" android:text="CTRL" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyAlt" android:layout_width="54dp" android:layout_height="32dp" android:text="ALT" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyPipe" android:layout_width="44dp" android:layout_height="32dp" android:text="|" android:textSize="11sp" android:textColor="@color/accent_cyan" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyTilde" android:layout_width="44dp" android:layout_height="32dp" android:text="~" android:textSize="11sp" android:textColor="@color/accent_cyan" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keySlash" android:layout_width="44dp" android:layout_height="32dp" android:text="/" android:textSize="11sp" android:textColor="@color/accent_cyan" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyHyphen" android:layout_width="44dp" android:layout_height="32dp" android:text="-" android:textSize="11sp" android:textColor="@color/accent_cyan" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyUp" android:layout_width="44dp" android:layout_height="32dp" android:text="UP" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyDown" android:layout_width="44dp" android:layout_height="32dp" android:text="DN" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyLeft" android:layout_width="44dp" android:layout_height="32dp" android:text="LT" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" android:layout_marginEnd="4dp" />
-                <Button android:id="@+id/keyRight" android:layout_width="44dp" android:layout_height="32dp" android:text="RT" android:textSize="10sp" android:textColor="@color/text_primary" android:backgroundTint="@color/bg_secondary" style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
+                <Button android:id="@+id/keyEsc" android:layout_width="56dp" android:layout_height="34dp" android:text="ESC" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyTab" android:layout_width="56dp" android:layout_height="34dp" android:text="TAB" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyCtrl" android:layout_width="56dp" android:layout_height="34dp" android:text="CTRL" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyAlt" android:layout_width="56dp" android:layout_height="34dp" android:text="ALT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyPipe" android:layout_width="44dp" android:layout_height="34dp" android:text="|" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyTilde" android:layout_width="44dp" android:layout_height="34dp" android:text="~" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keySlash" android:layout_width="44dp" android:layout_height="34dp" android:text="/" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyHyphen" android:layout_width="44dp" android:layout_height="34dp" android:text="-" android:textSize="12sp" android:textColor="@color/accent_cyan" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyUp" android:layout_width="46dp" android:layout_height="34dp" android:text="UP" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyDown" android:layout_width="46dp" android:layout_height="34dp" android:text="DN" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyLeft" android:layout_width="46dp" android:layout_height="34dp" android:text="LT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/keyRight" android:layout_width="46dp" android:layout_height="34dp" android:text="RT" android:textSize="10sp" android:textColor="@color/text_primary" android:background="@drawable/bg_key_chip" />
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>
-</LinearLayout>
+
+    <!-- Termius Pro Sidebar Navigation Drawer (Slide-in / Left Panel) -->
+    <LinearLayout
+        android:id="@+id/navigationDrawer"
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        android:background="@color/bg_sidebar"
+        android:padding="16dp">
+
+        <!-- Drawer Header Profile -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@color/bg_drawer_header"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_app_launcher"
+                android:contentDescription="Termius Pro Avatar" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Termius Pro Edition"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Huawei MatePad 12X (3:2 144Hz)"
+                    android:textColor="@color/accent_cyan"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Navigation Menu Items (Authentic Termius Pro Sections) -->
+        <!-- 1. Terminal / Active Session Windows -->
+        <LinearLayout
+            android:id="@+id/drawerItemTerminal"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_terminal"
+                app:tint="@color/accent_termius"
+                android:contentDescription="Terminal" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Active Terminal"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 2. Session Windows (Pro Multi-Pane Manager) -->
+        <LinearLayout
+            android:id="@+id/drawerItemSessionWindows"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_session_windows"
+                app:tint="@color/accent_cyan"
+                android:contentDescription="Session Windows" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Session Windows"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pro_badge"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="1dp"
+                android:text="PRO"
+                android:textColor="#0b0c16"
+                android:textSize="9sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 3. Hosts (Vault) -->
+        <LinearLayout
+            android:id="@+id/drawerItemHosts"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_hosts"
+                app:tint="@color/text_secondary"
+                android:contentDescription="Hosts" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Hosts Vault"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 4. ServerBox Monitoring Matrix -->
+        <LinearLayout
+            android:id="@+id/drawerItemMonitor"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_monitor"
+                app:tint="@color/accent_emerald"
+                android:contentDescription="ServerBox" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="ServerBox Monitor"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- 5. Snippets -->
+        <LinearLayout
+            android:id="@+id/drawerItemSnippets"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_snippets"
+                app:tint="@color/accent_amber"
+                android:contentDescription="Snippets" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Snippets Library"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/border_color"
+            android:layout_marginVertical="8dp" />
+
+        <!-- 6. Settings -->
+        <LinearLayout
+            android:id="@+id/drawerItemSettings"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_nav_settings"
+                app:tint="@color/text_secondary"
+                android:contentDescription="Settings" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="Settings &amp; Themes"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

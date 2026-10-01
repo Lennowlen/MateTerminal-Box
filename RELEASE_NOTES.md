@@ -18,6 +18,24 @@ Dedicated Terminal Emulator, SSH Manager & ServerBox Telemetry Hub for **Huawei 
 
 ## Version Changelog & Release Artifacts
 
+### [v1.5.0] - Authentic Termius Pro Clone & Multi-Pane Session Matrix Engine
+*Release Date: Current Production*
+
+#### Highlights & Improvements
+- **Authentic Termius APK Asset Extraction**: Extracted official vector path geometries, scale factors (`0.58`), translations (`22.5`), and two-layer linear gradients (`#FF1C265B` -> `#FF060816`) from `Termius - v7.4.2.apk` using `aapt2`. Rebuilt launcher icons (`ic_app_launcher.xml`, `ic_launcher_background.xml`, `ic_launcher_foreground.xml`) with zero badge distortions or crude text overlays.
+- **Official Termius Navigation Hierarchy**: Generated authentic vector drawables for drawer navigation (`ic_nav_drawer_host.xml`, `ic_nav_drawer_terminals.xml`, `ic_nav_drawer_sftp.xml`, `ic_nav_drawer_pf.xml`, `ic_nav_drawer_snippets.xml`, `ic_nav_drawer_known_hosts.xml`, `ic_nav_drawer_identity.xml`, `ic_nav_drawer_themes.xml`, `ic_nav_drawer_history.xml`, `ic_nav_drawer_settings.xml`, `ic_nav_drawer_help.xml`, `ic_nav_connections.xml`).
+- **Termius Pro Multi-Pane Session Matrix**: Implemented multi-window split pane manager supporting `1x1` (Single Fullscreen), `1x2` (Dual Horizontal), `2x1` (Dual Vertical), `2x2` (Quad Matrix), and `PiP` (Floating Overlay Window) across Android native views and Web simulator.
+- **Interactive Pane Focus & Keybar Routing**: Dynamic active pane border focus glow (`active-focused-pane` / `bg_window_active`), routing virtual touch keybars (`CTRL`, `ALT`, `ESC`, `TAB`, arrows) and input streams directly to the selected active pane.
+- **Termius Pro Session Windows Preset Manager**: Dedicated workspace manager allowing users to save, organize, and launch synchronized multi-host matrix layouts with a single tap.
+- **Zero Emojis Standard**: Complete compliance across all UI screens, logs, prompts, modals, and drawables.
+
+#### Download Artifacts
+- **Universal Android APK**: `release-artifacts/MateTerminal-Box-v1.5.0-debug.apk`
+- **APK SHA-256 Checksum**: `5A5EACCCF4140A360F188D4C53D6A7F6D3F6650BC45400EB7435839B15F2568B`
+- **Git Commit Tag**: `v1.5.0`
+
+---
+
 ### [v1.4.0] - Authentic Termius Midnight Pro Theme & Direct Android Drawer Alignment
 *Release Date: Current Production*
 

@@ -1,7 +1,7 @@
 /**
- * MateTerminal-Box Web Simulator
- * Huawei MatePad 12X Pro Edition
- * Strict Rule: Zero emojis anywhere in code, prompts, UI, or logs.
+ * MateTerminal-Box Web Simulator & Pro Session Studio
+ * Huawei MatePad 12X Pro Edition (12.0" 2800x1840 3:2 Display)
+ * Strict Standard: Zero emojis anywhere in code, prompts, UI, or logs.
  */
 
 // Storage Keys
@@ -11,7 +11,8 @@ const STORAGE_KEYS = {
     ACTIVITY_LOGS: 'mate_activity_logs',
     TUNNELS: 'mate_tunnels',
     KEYS: 'mate_keys',
-    SNIPPETS: 'mate_snippets'
+    SNIPPETS: 'mate_snippets',
+    SESSION_WINDOWS: 'mate_session_windows'
 };
 
 // Default Settings
@@ -176,22 +177,61 @@ const DEFAULT_KEYS = [
     }
 ];
 
+// Initial Seed Data for Termius Pro Session Windows Presets
+const DEFAULT_SESSION_WINDOWS = [
+    {
+        id: "sw_1",
+        name: "Quad Cloud Matrix (2x2)",
+        layout: "QUAD",
+        hostIds: ["local_device", "demo_vps", "homelab_pi", "local_device"],
+        activePane: 1,
+        createdAt: "2026-03-20"
+    },
+    {
+        id: "sw_2",
+        name: "Production Dual Ops (1x2)",
+        layout: "DUAL_H",
+        hostIds: ["demo_vps", "homelab_pi"],
+        activePane: 1,
+        createdAt: "2026-03-20"
+    },
+    {
+        id: "sw_3",
+        name: "PiP Telemetry Node",
+        layout: "PIP",
+        hostIds: ["local_device", "demo_vps"],
+        activePane: 1,
+        createdAt: "2026-03-21"
+    },
+    {
+        id: "sw_4",
+        name: "Single Local Shell (1x1)",
+        layout: "SINGLE",
+        hostIds: ["local_device"],
+        activePane: 1,
+        createdAt: "2026-03-21"
+    }
+];
+
 // App State
 let settings = loadSettings();
 let hosts = loadHosts();
 let snippets = loadSnippets();
 let tunnels = loadTunnels();
 let keys = loadKeys();
+let sessionWindows = loadSessionWindows();
 let activityLogs = loadActivityLogs();
-let currentNavMode = 'hosts';
+
+let currentNavMode = 'hosts'; // 'hosts' | 'session_windows' | 'serverbox' | 'port_forwarding' | 'snippets' | 'keys' | 'logs'
 let activeTabIndex = 0;
-let isSplit1x2 = false;
+let currentSplitMode = 'SINGLE'; // 'SINGLE' | 'DUAL_H' | 'DUAL_V' | 'QUAD' | 'PIP'
+let activeFocusedPane = 1; // 1..4
 let isSidebarCollapsed = false;
 let activeLogFilterDate = getTodayDateString();
 let activeHudHostId = 'local_device';
 let searchQuery = '';
 
-// Tabs & Session State
+// Multi-Tab Session State
 let tabs = [
     {
         id: "tab_1",
@@ -217,12 +257,6 @@ const btnTabScrollRight = document.getElementById('btn-tab-scroll-right');
 const btnTabDropdownToggle = document.getElementById('btn-tab-dropdown-toggle');
 const tabDropdownMenu = document.getElementById('tab-dropdown-menu');
 
-const termScreen1 = document.getElementById('term-screen-1');
-const termScreen2 = document.getElementById('term-screen-2');
-const termHistory1 = document.getElementById('term-history-1');
-const termHistory2 = document.getElementById('term-history-2');
-const termInput1 = document.getElementById('term-input-1');
-const termInput2 = document.getElementById('term-input-2');
 const terminalWrapper = document.getElementById('terminal-wrapper');
 const accessoryBar = document.getElementById('accessory-bar');
 const btnToggleAccessoryBar = document.getElementById('btn-toggle-accessory-bar');
@@ -231,10 +265,10 @@ const fabAddHost = document.getElementById('fab-add-host');
 const serverboxHud = document.getElementById('serverbox-hud');
 const hudTargetSelector = document.getElementById('hud-target-selector');
 const activityLogsView = document.getElementById('activity-logs-view');
+const sessionWindowsView = document.getElementById('session-windows-view');
+const sessionWindowsGrid = document.getElementById('session-windows-grid');
 const clockEl = document.getElementById('clock');
-const btnSplitToggle = document.getElementById('btn-split-toggle');
-const splitBtnText = document.getElementById('split-btn-text');
-const pane2 = document.getElementById('pane-2');
+
 const btnSidebarCollapse = document.getElementById('btn-sidebar-collapse');
 const btnSidebarExpand = document.getElementById('btn-sidebar-expand');
 const btnToggleHudMode = document.getElementById('btn-toggle-hud-mode');
@@ -243,6 +277,16 @@ const btnCloseHud = document.getElementById('btn-close-hud');
 const globalSyncBadge = document.getElementById('global-sync-badge');
 const toastEl = document.getElementById('toast-notify');
 const toastMessageEl = document.getElementById('toast-message');
+
+// Split Mode Selector Elements
+const splitModeSelector = document.getElementById('split-mode-selector');
+const splitButtons = {
+    SINGLE: document.getElementById('btn-mode-single'),
+    DUAL_H: document.getElementById('btn-mode-dual-h'),
+    DUAL_V: document.getElementById('btn-mode-dual-v'),
+    QUAD: document.getElementById('btn-mode-quad'),
+    PIP: document.getElementById('btn-mode-pip')
+};
 
 // Activity Log Elements
 const logDatePicker = document.getElementById('log-date-picker');
@@ -281,6 +325,7 @@ const modalAddHost = document.getElementById('modal-add-host');
 const modalAddForward = document.getElementById('modal-add-forward');
 const modalAddSnippet = document.getElementById('modal-add-snippet');
 const modalAddKey = document.getElementById('modal-add-key');
+const modalAddSessionWindow = document.getElementById('modal-add-session-window');
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
@@ -291,11 +336,12 @@ document.addEventListener('DOMContentLoaded', () => {
     updateForwardHostDropdown();
     renderSidebarList();
     renderTabs();
-    renderActiveTerminal();
+    applySplitLayout(currentSplitMode, false);
+    renderAllPanes();
     setupEventListeners();
     setupAccessoryKeys();
     setupTabNavigation();
-    setupInlineTextareas();
+    setupPaneInteractions();
     startTelemetryEngine();
 
     // Initial launch activity log
@@ -320,7 +366,7 @@ function formatTimeString(isoString) {
 function initClock() {
     function update() {
         const d = new Date();
-        clockEl.textContent = d.toTimeString().split(' ')[0];
+        if (clockEl) clockEl.textContent = d.toTimeString().split(' ')[0];
     }
     setInterval(update, 1000);
     update();
@@ -373,32 +419,37 @@ function applySettingsToUI() {
             cursorEl.classList.add('cursor-steady');
         }
     });
-    // 3. Sidebar Mode
-    if (settings.sidebarMode === 'FIXED') {
-        sidebarEl.classList.remove('collapsed');
-        btnSidebarCollapse.style.display = 'none';
-        btnSidebarExpand.style.display = 'none';
-        isSidebarCollapsed = false;
-    } else {
-        btnSidebarCollapse.style.display = 'flex';
-        btnSidebarExpand.style.display = isSidebarCollapsed ? 'flex' : 'none';
-    }
 
-    // 4. ServerBox HUD Button Visibility
-    if (settings.enableHud) {
-        btnToggleHudMode.style.display = 'flex';
-        const navHud = document.getElementById('nav-serverbox');
-        if (navHud) navHud.style.display = 'flex';
-    } else {
-        btnToggleHudMode.style.display = 'none';
-        const navHud = document.getElementById('nav-serverbox');
-        if (navHud) navHud.style.display = 'none';
-        if (currentNavMode === 'serverbox') {
-            switchNavMode('hosts', document.getElementById('nav-hosts'));
+    // 4. Sidebar Mode
+    if (sidebarEl && btnSidebarCollapse && btnSidebarExpand) {
+        if (settings.sidebarMode === 'FIXED') {
+            sidebarEl.classList.remove('collapsed');
+            btnSidebarCollapse.style.display = 'none';
+            btnSidebarExpand.style.display = 'none';
+            isSidebarCollapsed = false;
+        } else {
+            btnSidebarCollapse.style.display = 'flex';
+            btnSidebarExpand.style.display = isSidebarCollapsed ? 'flex' : 'none';
         }
     }
 
-    // 5. Virtual Accessory Key Bar Visibility
+    // 5. ServerBox HUD Button Visibility
+    if (btnToggleHudMode) {
+        if (settings.enableHud) {
+            btnToggleHudMode.style.display = 'flex';
+            const navHud = document.getElementById('nav-serverbox');
+            if (navHud) navHud.style.display = 'flex';
+        } else {
+            btnToggleHudMode.style.display = 'none';
+            const navHud = document.getElementById('nav-serverbox');
+            if (navHud) navHud.style.display = 'none';
+            if (currentNavMode === 'serverbox') {
+                switchNavMode('hosts', document.getElementById('nav-hosts'));
+            }
+        }
+    }
+
+    // 6. Virtual Accessory Key Bar Visibility
     if (accessoryBar) {
         if (settings.showAccessoryBar) {
             accessoryBar.classList.remove('hidden');
@@ -409,30 +460,32 @@ function applySettingsToUI() {
         }
     }
 
-    // 6. Keepalive status
+    // 7. Keepalive status
     const keepaliveLabel = document.getElementById('keepalive-label');
     const liveIndicator = document.getElementById('live-indicator');
-    if (settings.keepalive) {
-        keepaliveLabel.textContent = 'KEEPALIVE ACTIVE';
-        liveIndicator.style.backgroundColor = 'var(--accent-emerald)';
-    } else {
-        keepaliveLabel.textContent = 'KEEPALIVE OFF';
-        liveIndicator.style.backgroundColor = 'var(--accent-amber)';
+    if (keepaliveLabel && liveIndicator) {
+        if (settings.keepalive) {
+            keepaliveLabel.textContent = 'KEEPALIVE ACTIVE';
+            liveIndicator.style.backgroundColor = 'var(--accent-emerald)';
+        } else {
+            keepaliveLabel.textContent = 'KEEPALIVE OFF';
+            liveIndicator.style.backgroundColor = 'var(--accent-amber)';
+        }
     }
 
     // Populate Settings Modal Inputs
-    settingSidebarMode.value = settings.sidebarMode;
-    settingEnableHud.checked = settings.enableHud;
-    settingTheme.value = settings.theme || "Termius Dark";
+    if (settingSidebarMode) settingSidebarMode.value = settings.sidebarMode;
+    if (settingEnableHud) settingEnableHud.checked = settings.enableHud;
+    if (settingTheme) settingTheme.value = settings.theme || "Termius Dark";
     if (settingFontFamily) settingFontFamily.value = settings.fontFamily || "'Termius JetBrains Mono NF', monospace";
     if (settingCursorStyle) settingCursorStyle.value = settings.cursorStyle || "BLOCK_BLINK";
-    settingFontSize.value = String(settings.fontSize);
+    if (settingFontSize) settingFontSize.value = String(settings.fontSize);
     if (settingShowAccessoryBar) settingShowAccessoryBar.checked = settings.showAccessoryBar;
-    settingRannlabsEndpoint.value = settings.rannlabsEndpoint;
-    settingRannlabsKey.value = settings.rannlabsApiKey;
-    settingAutoSync.checked = settings.autoSync;
-    settingLogRetention.value = String(settings.logRetentionDays);
-    settingKeepalive.checked = settings.keepalive;
+    if (settingRannlabsEndpoint) settingRannlabsEndpoint.value = settings.rannlabsEndpoint;
+    if (settingRannlabsKey) settingRannlabsKey.value = settings.rannlabsApiKey;
+    if (settingAutoSync) settingAutoSync.checked = settings.autoSync;
+    if (settingLogRetention) settingLogRetention.value = String(settings.logRetentionDays);
+    if (settingKeepalive) settingKeepalive.checked = settings.keepalive;
 }
 
 // Storage Loaders
@@ -472,16 +525,21 @@ function loadKeys() {
     }
 }
 
+function loadSessionWindows() {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEYS.SESSION_WINDOWS);
+        return saved ? JSON.parse(saved) : DEFAULT_SESSION_WINDOWS;
+    } catch (e) {
+        return DEFAULT_SESSION_WINDOWS;
+    }
+}
+
 // Activity Logging Management
 function loadActivityLogs() {
     try {
         const saved = localStorage.getItem(STORAGE_KEYS.ACTIVITY_LOGS);
-        if (saved) {
-            return JSON.parse(saved);
-        }
-    } catch (e) {
-        console.error('Failed to load activity logs', e);
-    }
+        if (saved) return JSON.parse(saved);
+    } catch (e) {}
 
     const today = getTodayDateString();
     const yesterday = getTodayDateString(new Date(Date.now() - 86400000));
@@ -490,10 +548,10 @@ function loadActivityLogs() {
         {
             id: "log_init_1",
             logDate: today,
-            timestamp: new Date(Date.now() - 1500000).toISOString(),
+            timestamp: new Date(Date.now() - 3600000).toISOString(),
             eventType: "SESSION_OPEN",
-            hostTarget: "MatePad-12X (Local)",
-            commandText: "pty_bridge initialized for HarmonyOS subsystem",
+            hostTarget: "Huawei MatePad 12X (Local)",
+            commandText: "Launched local PTY shell subsystem (HarmonyOS 4.2 / Linux 5.10.160)",
             durationMs: 0,
             syncStatus: "SYNCED"
         },
@@ -670,7 +728,7 @@ function exportLogsToJson() {
 function setupEventListeners() {
     // Drawer Nav Items
     document.querySelectorAll('.drawer-nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
+        item.addEventListener('click', () => {
             const mode = item.dataset.mode;
             switchNavMode(mode, item);
         });
@@ -742,23 +800,21 @@ function setupEventListeners() {
         });
     }
 
-    // Split View Toggle
-    if (btnSplitToggle) {
-        btnSplitToggle.addEventListener('click', () => {
-            isSplit1x2 = !isSplit1x2;
-            if (isSplit1x2) {
-                pane2.classList.remove('hidden');
-                splitBtnText.textContent = "Split 1x1";
-                if (tabs.length === 1 && hosts.length > 1) {
-                    openNewTab(hosts[1]);
-                }
-                renderSplitPane2();
-                recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Enabled 1x2 dual-pane split view', 0);
-            } else {
-                pane2.classList.add('hidden');
-                splitBtnText.textContent = "Split 1x2";
-                recordActivityLog('WINDOW_SPLIT', 'Workspace', 'Switched back to 1x1 single pane view', 0);
-            }
+    // Split Mode Selector Buttons (1x1, 1x2, 2x1, 2x2, PiP)
+    Object.keys(splitButtons).forEach(mode => {
+        const btn = splitButtons[mode];
+        if (btn) {
+            btn.addEventListener('click', () => {
+                applySplitLayout(mode, true);
+            });
+        }
+    });
+
+    // Session Windows Manager Button
+    const btnCreateSessionWindow = document.getElementById('btn-create-session-window');
+    if (btnCreateSessionWindow) {
+        btnCreateSessionWindow.addEventListener('click', () => {
+            openCreateSessionWindowModal();
         });
     }
 
@@ -793,6 +849,9 @@ function setupEventListeners() {
     
     // Key Modal
     setupModal('modal-add-key', 'modal-key-close', 'modal-key-cancel', 'modal-key-save', saveNewKey);
+
+    // Session Window Preset Modal
+    setupModal('modal-add-session-window', 'modal-session-window-close', 'modal-session-window-cancel', 'modal-session-window-save', saveNewSessionWindow);
 
     // Settings Modal
     if (btnOpenSettings) btnOpenSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
@@ -851,6 +910,8 @@ function handleFabClick() {
         if (modalAddSnippet) modalAddSnippet.classList.remove('hidden');
     } else if (currentNavMode === 'keys') {
         if (modalAddKey) modalAddKey.classList.remove('hidden');
+    } else if (currentNavMode === 'session_windows') {
+        openCreateSessionWindowModal();
     } else {
         if (modalAddHost) modalAddHost.classList.remove('hidden');
     }
@@ -878,6 +939,7 @@ function switchNavMode(mode, targetBtn) {
         sidebarTitleEl.textContent = "MONITOR TARGETS";
         terminalWrapper.classList.add('hidden');
         activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         serverboxHud.classList.remove('hidden');
         hudToggleText.textContent = "Terminal";
         updateHudView();
@@ -885,32 +947,45 @@ function switchNavMode(mode, targetBtn) {
         sidebarTitleEl.textContent = "DAILY AUDIT ARCHIVE";
         terminalWrapper.classList.add('hidden');
         serverboxHud.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         activityLogsView.classList.remove('hidden');
         hudToggleText.textContent = "HUD";
         renderActivityLogsTable();
+    } else if (mode === 'session_windows') {
+        sidebarTitleEl.textContent = "WORKSPACE PRESETS";
+        terminalWrapper.classList.add('hidden');
+        serverboxHud.classList.add('hidden');
+        activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.remove('hidden');
+        hudToggleText.textContent = "HUD";
+        renderSessionWindowsGrid();
     } else if (mode === 'port_forwarding') {
         sidebarTitleEl.textContent = "PORT FORWARDING";
         terminalWrapper.classList.remove('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         hudToggleText.textContent = "HUD";
     } else if (mode === 'keys') {
         sidebarTitleEl.textContent = "KEYS & IDENTITIES";
         terminalWrapper.classList.remove('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         hudToggleText.textContent = "HUD";
     } else if (mode === 'snippets') {
         sidebarTitleEl.textContent = "SNIPPET SCRIPTS";
         terminalWrapper.classList.remove('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         hudToggleText.textContent = "HUD";
     } else {
         sidebarTitleEl.textContent = "SAVED HOSTS";
         terminalWrapper.classList.remove('hidden');
         serverboxHud.classList.add('hidden');
         activityLogsView.classList.add('hidden');
+        sessionWindowsView.classList.add('hidden');
         hudToggleText.textContent = "HUD";
     }
 
@@ -948,6 +1023,28 @@ function renderSidebarList() {
                 } else {
                     openNewTab(host);
                 }
+            });
+
+            hostListEl.appendChild(item);
+        });
+    } else if (currentNavMode === 'session_windows') {
+        const filtered = sessionWindows.filter(sw => !q || sw.name.toLowerCase().includes(q) || sw.layout.toLowerCase().includes(q));
+        sidebarCounterEl.textContent = filtered.length;
+
+        filtered.forEach(sw => {
+            const item = document.createElement('div');
+            item.className = 'host-item';
+            
+            item.innerHTML = `
+                <div class="host-item-header">
+                    <span class="host-name">${escapeHtml(sw.name)}</span>
+                    <span class="host-tag tag-cloud">${sw.layout}</span>
+                </div>
+                <div class="host-item-meta">${sw.hostIds.length} Hosts Bound | Created ${sw.createdAt}</div>
+            `;
+
+            item.addEventListener('click', () => {
+                launchSessionWindow(sw);
             });
 
             hostListEl.appendChild(item);
@@ -995,8 +1092,9 @@ function renderSidebarList() {
             `;
 
             item.addEventListener('click', () => {
-                executeTerminalCommand(activeTabIndex, snippet.command);
-                showToast(`Executed snippet: ${snippet.title}`);
+                const targetTabIdx = getTabIdxForPane(activeFocusedPane);
+                executeTerminalCommand(targetTabIdx, snippet.command);
+                showToast(`Executed snippet: ${snippet.title} on Pane ${activeFocusedPane}`);
             });
 
             hostListEl.appendChild(item);
@@ -1054,6 +1152,155 @@ function renderSidebarList() {
             hostListEl.appendChild(item);
         });
     }
+}
+
+// Session Windows Presets Management & Grid Rendering
+function renderSessionWindowsGrid() {
+    if (!sessionWindowsGrid) return;
+    sessionWindowsGrid.innerHTML = '';
+
+    sessionWindows.forEach(sw => {
+        const card = document.createElement('div');
+        card.className = 'session-window-card';
+
+        const boundHosts = sw.hostIds.map(hId => hosts.find(h => h.id === hId) || hosts[0]);
+        const boundBadges = boundHosts.map(h => `<span class="preset-chip ${h.category === 'Cloud' ? 'tag-cloud' : (h.category === 'Local' ? 'tag-local' : 'tag-homelab')}">${escapeHtml(h.name)}</span>`).join('');
+
+        let matrixPreviewClass = 'preview-single';
+        if (sw.layout === 'DUAL_H') matrixPreviewClass = 'preview-dual-h';
+        else if (sw.layout === 'DUAL_V') matrixPreviewClass = 'preview-dual-v';
+        else if (sw.layout === 'QUAD') matrixPreviewClass = 'preview-quad';
+        else if (sw.layout === 'PIP') matrixPreviewClass = 'preview-pip';
+
+        card.innerHTML = `
+            <div class="session-card-header">
+                <div class="session-card-title-group">
+                    <div class="mini-matrix-badge ${matrixPreviewClass}">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div>
+                        <div class="session-card-name">${escapeHtml(sw.name)}</div>
+                        <div class="session-card-layout">${sw.layout} Workspace Matrix</div>
+                    </div>
+                </div>
+                <button class="icon-btn-tiny btn-del-preset" data-id="${sw.id}" title="Delete Preset">&times;</button>
+            </div>
+            <div class="session-card-chips">
+                ${boundBadges}
+            </div>
+            <div class="session-card-footer">
+                <span class="session-card-date">Created ${sw.createdAt}</span>
+                <button class="btn-primary-sm btn-launch-preset" data-id="${sw.id}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <span>Launch Matrix</span>
+                </button>
+            </div>
+        `;
+
+        card.querySelector('.btn-launch-preset').addEventListener('click', () => {
+            launchSessionWindow(sw);
+        });
+
+        card.querySelector('.btn-del-preset').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteSessionWindow(sw.id);
+        });
+
+        sessionWindowsGrid.appendChild(card);
+    });
+}
+
+function launchSessionWindow(sw) {
+    // Switch view to terminal workspace
+    switchNavMode('hosts', document.getElementById('nav-hosts'));
+    
+    // Ensure sufficient tabs exist for each bound host
+    sw.hostIds.forEach((hId, idx) => {
+        const host = hosts.find(h => h.id === hId) || hosts[0];
+        if (idx < tabs.length) {
+            tabs[idx].host = host;
+        } else {
+            tabs.push({
+                id: "tab_" + (tabs.length + 1),
+                host: host,
+                history: [
+                    `<span class='ansi-cyan'>[Session Matrix Connected: ${host.username}@${host.hostname}]</span>`,
+                    `<span class='ansi-green'>Powerline Agonster Theme Engaged (Zero Emojis Standard)</span><br>`
+                ]
+            });
+        }
+    });
+
+    activeTabIndex = 0;
+    activeFocusedPane = sw.activePane || 1;
+    applySplitLayout(sw.layout, true);
+    renderTabs();
+    renderAllPanes();
+    showToast(`Launched Session Window Preset: "${sw.name}"`);
+    recordActivityLog('SESSION_WINDOW_LAUNCH', sw.name, `Orchestrated ${sw.layout} matrix workspace across ${sw.hostIds.length} bound hosts`, 0);
+}
+
+function openCreateSessionWindowModal() {
+    if (!modalAddSessionWindow) return;
+    const chkContainer = document.getElementById('sw-hosts-checkboxes');
+    if (chkContainer) {
+        chkContainer.innerHTML = '';
+        hosts.forEach(host => {
+            const lbl = document.createElement('label');
+            lbl.className = 'sw-checkbox-label';
+            lbl.innerHTML = `
+                <input type="checkbox" value="${host.id}" ${host.id === 'local_device' || host.id === 'demo_vps' ? 'checked' : ''}>
+                <span>${escapeHtml(host.name)} (${host.username}@${host.hostname})</span>
+            `;
+            chkContainer.appendChild(lbl);
+        });
+    }
+    modalAddSessionWindow.classList.remove('hidden');
+}
+
+function saveNewSessionWindow() {
+    const nameInput = document.getElementById('sw-workspace-name');
+    const layoutSelect = document.getElementById('sw-split-layout');
+    const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : "Custom Matrix Preset";
+    const layout = layoutSelect ? layoutSelect.value : "DUAL_H";
+
+    const chkContainer = document.getElementById('sw-hosts-checkboxes');
+    const selectedHostIds = [];
+    if (chkContainer) {
+        chkContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(chk => {
+            selectedHostIds.push(chk.value);
+        });
+    }
+
+    if (selectedHostIds.length === 0) {
+        selectedHostIds.push('local_device');
+    }
+
+    const newPreset = {
+        id: "sw_" + Date.now(),
+        name: name,
+        layout: layout,
+        hostIds: selectedHostIds,
+        activePane: 1,
+        createdAt: getTodayDateString()
+    };
+
+    sessionWindows.push(newPreset);
+    localStorage.setItem(STORAGE_KEYS.SESSION_WINDOWS, JSON.stringify(sessionWindows));
+    renderSessionWindowsGrid();
+    renderSidebarList();
+    recordActivityLog('SESSION_WINDOW_CREATE', name, `Created ${layout} workspace preset with ${selectedHostIds.length} bound hosts`, 0);
+    showToast(`Saved Session Window Preset "${name}".`);
+}
+
+function deleteSessionWindow(presetId) {
+    sessionWindows = sessionWindows.filter(sw => sw.id !== presetId);
+    localStorage.setItem(STORAGE_KEYS.SESSION_WINDOWS, JSON.stringify(sessionWindows));
+    renderSessionWindowsGrid();
+    renderSidebarList();
+    showToast('Session window preset deleted.');
 }
 
 // HUD Target Management
@@ -1150,8 +1397,7 @@ function renderTabDropdownMenu() {
         item.addEventListener('click', () => {
             activeTabIndex = index;
             renderTabs();
-            renderActiveTerminal();
-            if (isSplit1x2) renderSplitPane2();
+            renderAllPanes();
             tabDropdownMenu.classList.add('hidden');
             scrollToActiveTab();
         });
@@ -1161,6 +1407,7 @@ function renderTabDropdownMenu() {
 }
 
 function scrollToActiveTab() {
+    if (!tabsContainerEl) return;
     const activeTabEl = tabsContainerEl.children[activeTabIndex];
     if (activeTabEl) {
         activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
@@ -1179,14 +1426,14 @@ function openNewTab(host) {
     tabs.push(newTab);
     activeTabIndex = tabs.length - 1;
     renderTabs();
-    renderActiveTerminal();
-    if (isSplit1x2) renderSplitPane2();
+    renderAllPanes();
     scrollToActiveTab();
 
     recordActivityLog('SSH_CONNECT', host.name, `Connected to ${host.username}@${host.hostname}:${host.port || 22}`, 140);
 }
 
 function renderTabs() {
+    if (!tabsContainerEl) return;
     tabsContainerEl.innerHTML = '';
     tabs.forEach((tab, index) => {
         const tabEl = document.createElement('div');
@@ -1204,8 +1451,7 @@ function renderTabs() {
             } else {
                 activeTabIndex = index;
                 renderTabs();
-                renderActiveTerminal();
-                if (isSplit1x2) renderSplitPane2();
+                renderAllPanes();
                 scrollToActiveTab();
             }
         });
@@ -1222,104 +1468,184 @@ function closeTab(index) {
         activeTabIndex = tabs.length - 1;
     }
     renderTabs();
-    renderActiveTerminal();
-    if (isSplit1x2) renderSplitPane2();
-    scrollToActiveTab();
-
-    recordActivityLog('SESSION_CLOSE', closedTab.host.name, `Closed terminal session tab ${closedTab.id}`, 0);
+    renderAllPanes();
+    recordActivityLog('SESSION_CLOSE', closedTab.host.name, `Closed session tab for ${closedTab.host.hostname}`, 0);
+    showToast(`Closed tab "${closedTab.host.name}".`);
 }
 
-// Inline Terminal Buffer & Multiline Handling
-function setupInlineTextareas() {
-    function autoExpand(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px';
-    }
-
-    function handleKeydown(e, textarea, tabIdx) {
-        if (e.key === 'Enter') {
-            if (e.shiftKey) {
-                // Multiline continuation with Shift+Enter
-                return;
-            }
-            
-            const rawVal = textarea.value;
-            const trimmed = rawVal.trim();
-
-            // Support line continuation if command ends with '\'
-            if (rawVal.endsWith('\\\n') || rawVal.endsWith('\\')) {
-                return;
-            }
-
-            if (trimmed.length > 0) {
-                e.preventDefault();
-                executeTerminalCommand(tabIdx, trimmed);
-                textarea.value = '';
-                textarea.style.height = 'auto';
-            } else {
-                e.preventDefault();
-                executeTerminalCommand(tabIdx, '');
-                textarea.value = '';
-                textarea.style.height = 'auto';
-            }
+// Termius Pro Session Window Multi-Pane Matrix Manager
+function applySplitLayout(mode, shouldRecordLog = false) {
+    currentSplitMode = mode;
+    
+    // Update Split Mode Selector Buttons UI
+    Object.keys(splitButtons).forEach(m => {
+        const btn = splitButtons[m];
+        if (btn) {
+            btn.classList.toggle('active', m === mode);
         }
+    });
+
+    // Update terminal container class
+    if (terminalWrapper) {
+        terminalWrapper.className = `terminal-panes-wrapper split-${mode.toLowerCase().replace('_', '-')}`;
     }
 
-    if (termInput1) {
-        termInput1.addEventListener('input', () => autoExpand(termInput1));
-        termInput1.addEventListener('keydown', (e) => handleKeydown(e, termInput1, activeTabIndex));
-        if (termScreen1) {
-            termScreen1.addEventListener('click', () => termInput1.focus());
-        }
-    }
-
-    if (termInput2) {
-        termInput2.addEventListener('input', () => autoExpand(termInput2));
-        termInput2.addEventListener('keydown', (e) => {
-            const secondIndex = (activeTabIndex + 1) % tabs.length;
-            handleKeydown(e, termInput2, secondIndex);
+    // Automatically ensure we have enough tabs spawned for the layout
+    const requiredTabs = mode === 'QUAD' ? 4 : (mode === 'DUAL_H' || mode === 'DUAL_V' || mode === 'PIP' ? 2 : 1);
+    while (tabs.length < requiredTabs) {
+        const nextHost = hosts[tabs.length % hosts.length] || hosts[0];
+        tabs.push({
+            id: "tab_" + (tabs.length + 1),
+            host: nextHost,
+            history: [
+                `<span class='ansi-cyan'>[Matrix Auto-Pane Connected: ${nextHost.username}@${nextHost.hostname}]</span>`,
+                `<span class='ansi-green'>Subshell Initialized</span><br>`
+            ]
         });
-        if (termScreen2) {
-            termScreen2.addEventListener('click', () => termInput2.focus());
+    }
+
+    renderTabs();
+    renderAllPanes();
+    setFocusedPane(activeFocusedPane);
+
+    if (shouldRecordLog) {
+        recordActivityLog('WINDOW_SPLIT', 'Workspace', `Switched layout matrix to ${mode}`, 0);
+    }
+}
+
+function getTabIdxForPane(paneNumber) {
+    if (paneNumber === 1) return activeTabIndex;
+    return (activeTabIndex + (paneNumber - 1)) % tabs.length;
+}
+
+function setFocusedPane(paneNumber) {
+    activeFocusedPane = paneNumber;
+    for (let i = 1; i <= 4; i++) {
+        const paneEl = document.getElementById(`pane-${i}`);
+        if (paneEl) {
+            paneEl.classList.toggle('active-focused-pane', i === paneNumber);
+        }
+    }
+    const activeInput = document.getElementById(`term-input-${paneNumber}`);
+    if (activeInput) {
+        activeInput.focus();
+    }
+}
+
+function setupPaneInteractions() {
+    for (let i = 1; i <= 4; i++) {
+        const paneEl = document.getElementById(`pane-${i}`);
+        const screenEl = document.getElementById(`term-screen-${i}`);
+        const inputEl = document.getElementById(`term-input-${i}`);
+        const paneNum = i;
+
+        if (paneEl) {
+            paneEl.addEventListener('click', (e) => {
+                if (e.target.closest('.pane-tool-btn')) return;
+                setFocusedPane(paneNum);
+            });
+        }
+
+        if (screenEl && inputEl) {
+            screenEl.addEventListener('click', () => {
+                setFocusedPane(paneNum);
+                inputEl.focus();
+            });
+
+            inputEl.addEventListener('input', () => autoExpand(inputEl));
+            inputEl.addEventListener('keydown', (e) => {
+                const targetTabIdx = getTabIdxForPane(paneNum);
+                handleKeydown(e, inputEl, targetTabIdx);
+            });
+        }
+
+        // Pane Tool Buttons (Clear & Close)
+        const clearBtn = paneEl ? paneEl.querySelector('.pane-tool-btn[data-action="clear"]') : null;
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const targetTabIdx = getTabIdxForPane(paneNum);
+                if (tabs[targetTabIdx]) {
+                    tabs[targetTabIdx].history = [];
+                    renderPane(paneNum);
+                    showToast(`Cleared buffer on Pane ${paneNum}.`);
+                }
+            });
+        }
+
+        const closeBtn = paneEl ? paneEl.querySelector('.pane-close-btn') : null;
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentSplitMode !== 'SINGLE') {
+                    applySplitLayout('SINGLE', true);
+                    showToast(`Collapsed Pane ${paneNum} to 1x1 Single View.`);
+                }
+            });
         }
     }
 }
 
-function renderActiveTerminal() {
-    const currentTab = tabs[activeTabIndex];
-    if (!currentTab) return;
+function autoExpand(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 180) + 'px';
+}
 
-    document.getElementById('pane-1-title').textContent = `${currentTab.host.name} [${currentTab.host.authType}]`;
-    document.getElementById('prompt-1').innerHTML = currentTab.host.authType === 'LOCAL_PTY'
-        ? "<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>"
-        : `<span class='ansi-cyan'>${currentTab.host.username}@${currentTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
+function handleKeydown(e, textarea, tabIdx) {
+    if (e.key === 'Enter') {
+        if (e.shiftKey) {
+            return; // Allow multiline
+        }
 
-    if (termHistory1) {
-        termHistory1.innerHTML = currentTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
-    }
-    if (termScreen1) {
-        termScreen1.scrollTop = termScreen1.scrollHeight;
-    }
-    if (termInput1) {
-        termInput1.focus();
+        const text = textarea.value;
+        const trimmed = text.trim();
+
+        if (trimmed.length > 0) {
+            e.preventDefault();
+            executeTerminalCommand(tabIdx, trimmed);
+            textarea.value = '';
+            textarea.style.height = 'auto';
+        } else {
+            e.preventDefault();
+            executeTerminalCommand(tabIdx, '');
+            textarea.value = '';
+            textarea.style.height = 'auto';
+        }
     }
 }
 
-function renderSplitPane2() {
-    if (tabs.length <= 1) return;
-    const secondIndex = (activeTabIndex + 1) % tabs.length;
-    const secondTab = tabs[secondIndex];
-
-    document.getElementById('pane-2-title').textContent = `${secondTab.host.name} [${secondTab.host.authType}]`;
-    document.getElementById('prompt-2').innerHTML = secondTab.host.authType === 'LOCAL_PTY'
-        ? "<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>"
-        : `<span class='ansi-cyan'>${secondTab.host.username}@${secondTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
-
-    if (termHistory2) {
-        termHistory2.innerHTML = secondTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
+function renderAllPanes() {
+    for (let i = 1; i <= 4; i++) {
+        renderPane(i);
     }
-    if (termScreen2) {
-        termScreen2.scrollTop = termScreen2.scrollHeight;
+}
+
+function renderPane(paneNumber) {
+    const tabIdx = getTabIdxForPane(paneNumber);
+    const targetTab = tabs[tabIdx];
+    if (!targetTab) return;
+
+    const titleEl = document.getElementById(`pane-${paneNumber}-title`);
+    const promptEl = document.getElementById(`prompt-${paneNumber}`);
+    const historyEl = document.getElementById(`term-history-${paneNumber}`);
+    const screenEl = document.getElementById(`term-screen-${paneNumber}`);
+
+    if (titleEl) {
+        titleEl.textContent = `${targetTab.host.name} [${targetTab.host.authType}]`;
+    }
+
+    if (promptEl) {
+        promptEl.innerHTML = targetTab.host.authType === 'LOCAL_PTY'
+            ? "<span class='ansi-green'>&#x279c;</span> <span class='ansi-cyan'>~</span> <span class='ansi-green'>&#x276f;</span>"
+            : `<span class='ansi-cyan'>${targetTab.host.username}@${targetTab.host.hostname}</span> <span class='ansi-green'>&#x276f;</span>`;
+    }
+
+    if (historyEl) {
+        historyEl.innerHTML = targetTab.history.map(line => `<div class="term-line">${line}</div>`).join('');
+    }
+
+    if (screenEl) {
+        screenEl.scrollTop = screenEl.scrollHeight;
     }
 }
 
@@ -1385,8 +1711,7 @@ function executeTerminalCommand(tabIdx, cmd) {
         recordActivityLog('COMMAND_EXEC', targetTab.host.name, cmd, duration);
     }
 
-    renderActiveTerminal();
-    if (isSplit1x2) renderSplitPane2();
+    renderAllPanes();
 }
 
 let isCtrlActive = false;
@@ -1399,21 +1724,25 @@ function setupAccessoryKeys() {
     document.querySelectorAll('.key-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const key = btn.dataset.key;
-            const input = termInput1;
+            const input = document.getElementById(`term-input-${activeFocusedPane}`) || document.getElementById('term-input-1');
+            const screen = document.getElementById(`term-screen-${activeFocusedPane}`) || document.getElementById('term-screen-1');
+            const targetTabIdx = getTabIdxForPane(activeFocusedPane);
             
             if (key === 'CTRL') {
                 isCtrlActive = !isCtrlActive;
                 btn.classList.toggle('active', isCtrlActive);
-                input.focus();
+                if (input) input.focus();
                 return;
             }
             
             if (key === 'ALT') {
                 isAltActive = !isAltActive;
                 btn.classList.toggle('active', isAltActive);
-                input.focus();
+                if (input) input.focus();
                 return;
             }
+
+            if (!input) return;
 
             if (key === 'ESC') {
                 input.value = '';
@@ -1435,26 +1764,26 @@ function setupAccessoryKeys() {
             } else if (key === 'LT' || key === 'RT') {
                 input.focus();
             } else if (key === 'PGUP') {
-                termScreen1.scrollTop -= 200;
+                if (screen) screen.scrollTop -= 200;
             } else if (key === 'PGDN') {
-                termScreen1.scrollTop += 200;
+                if (screen) screen.scrollTop += 200;
             } else if (key === 'PASTE') {
                 input.value += 'curl -s https://api.rann-labs.com/health';
                 showToast('Pasted command buffer.');
             } else if (key === 'CLEAR') {
-                const targetTab = tabs[activeTabIndex];
+                const targetTab = tabs[targetTabIdx];
                 if (targetTab) targetTab.history = [];
-                renderActiveTerminal();
-                showToast('Cleared buffer.');
+                renderPane(activeFocusedPane);
+                showToast(`Cleared buffer on Pane ${activeFocusedPane}.`);
             } else {
                 if (isCtrlActive && key.toLowerCase() === 'c') {
-                    executeTerminalCommand(activeTabIndex, '^C');
+                    executeTerminalCommand(targetTabIdx, '^C');
                     isCtrlActive = false;
                     if (btnCtrl) btnCtrl.classList.remove('active');
                 } else if (isCtrlActive && key.toLowerCase() === 'l') {
-                    const targetTab = tabs[activeTabIndex];
+                    const targetTab = tabs[targetTabIdx];
                     if (targetTab) targetTab.history = [];
-                    renderActiveTerminal();
+                    renderPane(activeFocusedPane);
                     isCtrlActive = false;
                     if (btnCtrl) btnCtrl.classList.remove('active');
                 } else {
@@ -1527,7 +1856,8 @@ function saveNewHost() {
 
     hosts.push(newHost);
     localStorage.setItem(STORAGE_KEYS.HOSTS, JSON.stringify(hosts));
-    document.getElementById('badge-hosts-count').textContent = hosts.length;
+    const countBadge = document.getElementById('badge-hosts-count');
+    if (countBadge) countBadge.textContent = hosts.length;
     renderSidebarList();
     initHudTargetSelector();
     updateForwardHostDropdown();
@@ -1571,7 +1901,8 @@ function saveNewSnippet() {
 
     snippets.push(newSnippet);
     localStorage.setItem(STORAGE_KEYS.SNIPPETS, JSON.stringify(snippets));
-    document.getElementById('badge-snippets-count').textContent = snippets.length;
+    const snipBadge = document.getElementById('badge-snippets-count');
+    if (snipBadge) snipBadge.textContent = snippets.length;
     renderSidebarList();
     recordActivityLog('SNIPPET_CREATE', title, `Added terminal snippet: ${command}`, 0);
     showToast(`Saved snippet "${title}".`);

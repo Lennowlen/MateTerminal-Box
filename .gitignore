@@ -15,3 +15,8 @@
 local.properties
 node_modules
 dist
+build/
+*/build/
+app/build/
+.cxx/
+app/.cxx/

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MateTerminal-Box | Huawei MatePad 12X Pro Workstation</title>
+    <title>MateTerminal-Box | Huawei MatePad 12X Termius Pro Workstation</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +16,21 @@
                 <span class="sync-pill" id="global-sync-badge">Rann-Labs: Idle</span>
             </div>
             <div class="status-center">
-                <span class="app-branding">MateTerminal-Box (Termius Midnight Pro)</span>
+                <div class="termius-top-brand">
+                    <svg class="top-logo-svg" width="18" height="18" viewBox="0 0 108 108" fill="none">
+                        <g transform="scale(0.58) translate(22.5, 22.5)">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M72.8,78.73C84.09,78.93 93.43,69.92 93.63,58.63C93.73,53.02 91.43,47.51 87.41,43.6C87.51,32.72 78.79,23.76 67.89,23.57C64.73,23.51 61.63,24.2 58.82,25.58C55.21,22.05 50.4,20.02 45.28,19.94C34.62,19.75 25.74,28.04 25.11,38.57C18.58,42.07 14.38,48.85 14.25,56.34C14.05,67.68 23.12,77.06 34.46,77.26C35,77.27 35.54,77.25 36.08,77.22C39.75,83.66 46.61,87.78 54.11,87.91C61.29,88.04 67.96,84.55 71.97,78.7C72.25,78.72 72.52,78.73 72.8,78.73ZM54.21,82.52C48.13,82.41 42.6,78.77 40.1,73.23L39.25,71.35L37.21,71.67C36.34,71.81 35.45,71.87 34.56,71.86C26.2,71.71 19.51,64.79 19.65,56.44C19.76,50.47 23.36,45.12 28.84,42.76L30.53,42.04L30.48,40.2C30.47,39.98 30.47,39.75 30.47,39.53C30.61,31.57 37.22,25.19 45.19,25.33C49.48,25.41 53.47,27.35 56.17,30.68L57.7,32.56L59.73,31.25C62.14,29.7 64.93,28.91 67.8,28.96C75.77,29.1 82.15,35.7 82.01,43.67C82,43.95 81.99,44.24 81.96,44.53L81.86,45.9L82.91,46.8C86.31,49.69 88.3,54.09 88.22,58.54C88.08,66.84 81.2,73.48 72.89,73.34C72.25,73.32 71.6,73.27 70.96,73.18L69.13,72.91L68.22,74.52C65.36,79.56 60,82.62 54.21,82.52ZM64.85,61.1L64.9,61.08C65.61,60.79 65.86,60.53 65.88,59.8L65.89,58.88C65.91,58.07 65.45,57.54 64.69,57.53L64.65,57.53L64.5,57.56C62.79,58.13 61.11,58.4 59.51,58.37C57.92,58.34 56.36,58.02 54.87,57.4L54.82,57.38L54.65,57.35C53.89,57.34 53.42,57.85 53.4,58.66L53.39,59.58C53.38,60.27 53.63,60.58 54.23,60.86L54.3,60.89L54.36,60.91C55.99,61.65 57.71,62.03 59.45,62.06C61.19,62.09 63,61.77 64.85,61.1ZM41.56,53.14C41.57,52.4 41.96,52 42.48,51.9L47.47,50.68L42.51,49.29C42,49.14 41.63,48.73 41.65,48.02L41.67,46.45C41.68,45.77 42.1,45.48 42.57,45.49C42.72,45.49 42.88,45.53 43.04,45.59L51.85,48.61C52.52,48.85 52.88,49.39 52.87,50.13L52.84,51.41C52.83,52.15 52.45,52.69 51.77,52.9L42.84,55.62C42.69,55.66 42.56,55.68 42.43,55.68C41.87,55.67 41.52,55.26 41.53,54.68L41.56,53.14Z" fill="url(#topLogoGrad)" />
+                        </g>
+                        <defs>
+                            <linearGradient id="topLogoGrad" x1="54.5" y1="20" x2="53.4" y2="88" gradientUnits="userSpaceOnUse">
+                                <stop offset="0" stop-color="#FFFFFF"/>
+                                <stop offset="1" stop-color="#C0CDD8"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <span class="app-branding">MateTerminal-Box (Termius Midnight Pro)</span>
+                    <span class="badge-pro-pill">PRO</span>
+                </div>
             </div>
             <div class="status-right">
                 <span class="indicator live-dot" id="live-indicator"></span>
@@ -31,15 +45,15 @@
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="brand-logo">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7952ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        <svg class="drawer-brand-icon" width="28" height="28" viewBox="0 0 108 108" fill="none">
+                            <g transform="scale(0.58) translate(22.5, 22.5)">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M72.8,78.73C84.09,78.93 93.43,69.92 93.63,58.63C93.73,53.02 91.43,47.51 87.41,43.6C87.51,32.72 78.79,23.76 67.89,23.57C64.73,23.51 61.63,24.2 58.82,25.58C55.21,22.05 50.4,20.02 45.28,19.94C34.62,19.75 25.74,28.04 25.11,38.57C18.58,42.07 14.38,48.85 14.25,56.34C14.05,67.68 23.12,77.06 34.46,77.26C35,77.27 35.54,77.25 36.08,77.22C39.75,83.66 46.61,87.78 54.11,87.91C61.29,88.04 67.96,84.55 71.97,78.7C72.25,78.72 72.52,78.73 72.8,78.73ZM54.21,82.52C48.13,82.41 42.6,78.77 40.1,73.23L39.25,71.35L37.21,71.67C36.34,71.81 35.45,71.87 34.56,71.86C26.2,71.71 19.51,64.79 19.65,56.44C19.76,50.47 23.36,45.12 28.84,42.76L30.53,42.04L30.48,40.2C30.47,39.98 30.47,39.75 30.47,39.53C30.61,31.57 37.22,25.19 45.19,25.33C49.48,25.41 53.47,27.35 56.17,30.68L57.7,32.56L59.73,31.25C62.14,29.7 64.93,28.91 67.8,28.96C75.77,29.1 82.15,35.7 82.01,43.67C82,43.95 81.99,44.24 81.96,44.53L81.86,45.9L82.91,46.8C86.31,49.69 88.3,54.09 88.22,58.54C88.08,66.84 81.2,73.48 72.89,73.34C72.25,73.32 71.6,73.27 70.96,73.18L69.13,72.91L68.22,74.52C65.36,79.56 60,82.62 54.21,82.52ZM64.85,61.1L64.9,61.08C65.61,60.79 65.86,60.53 65.88,59.8L65.89,58.88C65.91,58.07 65.45,57.54 64.69,57.53L64.65,57.53L64.5,57.56C62.79,58.13 61.11,58.4 59.51,58.37C57.92,58.34 56.36,58.02 54.87,57.4L54.82,57.38L54.65,57.35C53.89,57.34 53.42,57.85 53.4,58.66L53.39,59.58C53.38,60.27 53.63,60.58 54.23,60.86L54.3,60.89L54.36,60.91C55.99,61.65 57.71,62.03 59.45,62.06C61.19,62.09 63,61.77 64.85,61.1ZM41.56,53.14C41.57,52.4 41.96,52 42.48,51.9L47.47,50.68L42.51,49.29C42,49.14 41.63,48.73 41.65,48.02L41.67,46.45C41.68,45.77 42.1,45.48 42.57,45.49C42.72,45.49 42.88,45.53 43.04,45.59L51.85,48.61C52.52,48.85 52.88,49.39 52.87,50.13L52.84,51.41C52.83,52.15 52.45,52.69 51.77,52.9L42.84,55.62C42.69,55.66 42.56,55.68 42.43,55.68C41.87,55.67 41.52,55.26 41.53,54.68L41.56,53.14Z" fill="#2091F6" />
+                            </g>
                         </svg>
                     </div>
                     <div class="brand-text">
                         <h3>MateTerminal</h3>
-                        <p>Termius Midnight Pro Engine</p>
+                        <p>Termius Pro Session Studio</p>
                     </div>
                     <button class="icon-btn" id="btn-sidebar-collapse" title="Collapse Sidebar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -59,6 +73,17 @@
                         </svg>
                         <span>Hosts</span>
                         <span class="drawer-badge" id="badge-hosts-count">3</span>
+                    </button>
+
+                    <button class="drawer-nav-item" data-mode="session_windows" id="nav-session-windows">
+                        <svg class="drawer-nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Session Windows</span>
+                        <span class="drawer-badge badge-pro">PRO</span>
                     </button>
 
                     <button class="drawer-nav-item" data-mode="serverbox" id="nav-serverbox">
@@ -208,6 +233,45 @@
                         </div>
                     </div>
 
+                    <!-- Termius Pro Session Window Split Modes -->
+                    <div class="split-mode-selector" id="split-mode-selector">
+                        <button class="mode-btn active" id="btn-mode-single" data-mode="SINGLE" title="1x1 Fullscreen Pane">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            </svg>
+                            <span>1x1</span>
+                        </button>
+                        <button class="mode-btn" id="btn-mode-dual-h" data-mode="DUAL_H" title="1x2 Dual Horizontal Split">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                            </svg>
+                            <span>1x2</span>
+                        </button>
+                        <button class="mode-btn" id="btn-mode-dual-v" data-mode="DUAL_V" title="2x1 Dual Vertical Split">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                            </svg>
+                            <span>2x1</span>
+                        </button>
+                        <button class="mode-btn" id="btn-mode-quad" data-mode="QUAD" title="2x2 Quad Session Matrix">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                            </svg>
+                            <span>2x2</span>
+                        </button>
+                        <button class="mode-btn" id="btn-mode-pip" data-mode="PIP" title="Floating PiP Overlay Window">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <rect x="12" y="11" width="8" height="8" rx="1" fill="currentColor" opacity="0.3"></rect>
+                            </svg>
+                            <span>PiP</span>
+                        </button>
+                    </div>
+
                     <div class="workspace-actions">
                         <button class="action-btn" id="btn-new-tab" title="Open New Tab">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -215,13 +279,6 @@
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
                             <span>Tab</span>
-                        </button>
-                        <button class="action-btn" id="btn-split-toggle" title="Toggle 1x2 Split">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="12" y1="3" x2="12" y2="21"></line>
-                            </svg>
-                            <span id="split-btn-text">Split 1x2</span>
                         </button>
                         <button class="action-btn" id="btn-toggle-hud-mode" title="Toggle ServerBox HUD View">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -254,17 +311,21 @@
 
                 <!-- Main View Container -->
                 <div class="view-container">
-                    <!-- Split Terminal Panes (1x1 or 1x2) -->
-                    <div class="terminal-panes-wrapper" id="terminal-wrapper">
-                        <!-- Primary Pane -->
-                        <div class="terminal-pane pane-primary" id="pane-1">
+                    <!-- Termius Pro 4-Pane Matrix Terminal Container -->
+                    <div class="terminal-panes-wrapper split-single" id="terminal-wrapper">
+                        <!-- Primary Pane 1 -->
+                        <div class="terminal-pane pane-1 active-focused-pane" id="pane-1" data-pane="1">
                             <div class="pane-header">
                                 <div class="pane-header-left">
+                                    <span class="pane-indicator live-dot"></span>
                                     <span class="pane-title" id="pane-1-title">localhost [Local PTY]</span>
-                                    <span class="pane-tag">TTY 1</span>
+                                    <span class="pane-tag">Pane 1</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <button class="pane-tool-btn" data-pane="1" data-action="clear" title="Clear Buffer">CLR</button>
+                                    <button class="pane-tool-btn pane-close-btn" data-pane="1" title="Close Pane">&times;</button>
                                 </div>
                             </div>
-                            <!-- Pure Direct Stream Terminal Matrix Buffer -->
                             <div class="terminal-screen" id="term-screen-1" tabindex="0">
                                 <div class="terminal-history" id="term-history-1"></div>
                                 <div class="terminal-inline-input-line" id="term-line-1">
@@ -276,15 +337,19 @@
                             </div>
                         </div>
 
-                        <!-- Secondary Pane (Split 1x2) -->
-                        <div class="terminal-pane pane-secondary hidden" id="pane-2">
+                        <!-- Secondary Pane 2 -->
+                        <div class="terminal-pane pane-2 hidden" id="pane-2" data-pane="2">
                             <div class="pane-header">
                                 <div class="pane-header-left">
+                                    <span class="pane-indicator live-dot"></span>
                                     <span class="pane-title" id="pane-2-title">Production VPS [SSH]</span>
-                                    <span class="pane-tag">TTY 2</span>
+                                    <span class="pane-tag">Pane 2</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <button class="pane-tool-btn" data-pane="2" data-action="clear" title="Clear Buffer">CLR</button>
+                                    <button class="pane-tool-btn pane-close-btn" data-pane="2" title="Close Pane">&times;</button>
                                 </div>
                             </div>
-                            <!-- Pure Direct Stream Terminal Matrix Buffer -->
                             <div class="terminal-screen" id="term-screen-2" tabindex="0">
                                 <div class="terminal-history" id="term-history-2"></div>
                                 <div class="terminal-inline-input-line" id="term-line-2">
@@ -294,6 +359,77 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Tertiary Pane 3 -->
+                        <div class="terminal-pane pane-3 hidden" id="pane-3" data-pane="3">
+                            <div class="pane-header">
+                                <div class="pane-header-left">
+                                    <span class="pane-indicator live-dot"></span>
+                                    <span class="pane-title" id="pane-3-title">HomeLab Pi 5 [SSH]</span>
+                                    <span class="pane-tag">Pane 3</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <button class="pane-tool-btn" data-pane="3" data-action="clear" title="Clear Buffer">CLR</button>
+                                    <button class="pane-tool-btn pane-close-btn" data-pane="3" title="Close Pane">&times;</button>
+                                </div>
+                            </div>
+                            <div class="terminal-screen" id="term-screen-3" tabindex="0">
+                                <div class="terminal-history" id="term-history-3"></div>
+                                <div class="terminal-inline-input-line" id="term-line-3">
+                                    <span class="term-prompt" id="prompt-3">pi@homelab ~ &#x276f;</span>
+                                    <div class="term-input-wrapper">
+                                        <textarea id="term-input-3" class="term-inline-textarea" rows="1" autocomplete="off" spellcheck="false"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quaternary Pane 4 -->
+                        <div class="terminal-pane pane-4 hidden" id="pane-4" data-pane="4">
+                            <div class="pane-header">
+                                <div class="pane-header-left">
+                                    <span class="pane-indicator live-dot"></span>
+                                    <span class="pane-title" id="pane-4-title">Telemetry Stream [Monitor]</span>
+                                    <span class="pane-tag">Pane 4</span>
+                                </div>
+                                <div class="pane-header-right">
+                                    <button class="pane-tool-btn" data-pane="4" data-action="clear" title="Clear Buffer">CLR</button>
+                                    <button class="pane-tool-btn pane-close-btn" data-pane="4" title="Close Pane">&times;</button>
+                                </div>
+                            </div>
+                            <div class="terminal-screen" id="term-screen-4" tabindex="0">
+                                <div class="terminal-history" id="term-history-4"></div>
+                                <div class="terminal-inline-input-line" id="term-line-4">
+                                    <span class="term-prompt" id="prompt-4">monitor@system ~ &#x276f;</span>
+                                    <div class="term-input-wrapper">
+                                        <textarea id="term-input-4" class="term-inline-textarea" rows="1" autocomplete="off" spellcheck="false"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Termius Pro Session Windows Preset Manager View -->
+                    <div class="session-windows-view hidden" id="session-windows-view">
+                        <div class="windows-header-card">
+                            <div>
+                                <h2>Termius Pro Session Windows Manager</h2>
+                                <p>Save, orchestrate, and launch multi-pane terminal matrix workspaces (1x1, 1x2, 2x1, 2x2, PiP) with synchronized host bindings.</p>
+                            </div>
+                            <div class="windows-toolbar">
+                                <button class="btn-primary" id="btn-create-session-window">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    <span>Create Session Window</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="session-windows-grid" id="session-windows-grid">
+                            <!-- Populated dynamically via app.js -->
                         </div>
                     </div>
 
@@ -344,60 +480,67 @@
                             <!-- RAM Card -->
                             <div class="hud-card">
                                 <div class="hud-card-header">
-                                    <span class="hud-card-title">RAM &amp; ZRAM MEMORY</span>
-                                    <span class="hud-card-value" id="hud-mem-val">4.2 GB / 12.0 GB (35%)</span>
+                                    <span class="hud-card-title">MEMORY (RAM)</span>
+                                    <span class="hud-card-value" id="hud-ram-val">4.8 GB / 12 GB</span>
                                 </div>
                                 <div class="hud-progress-bg">
-                                    <div class="hud-progress-fill fill-mem" id="hud-mem-bar" style="width: 35%;"></div>
+                                    <div class="hud-progress-fill fill-ram" id="hud-ram-bar" style="width: 40%;"></div>
                                 </div>
                                 <div class="hud-card-sub">
-                                    <span>Physical: 12GB LPDDR5</span>
-                                    <span>ZRAM: 4.0GB Compressed</span>
+                                    <span id="hud-ram-pct">40.0% Used</span>
+                                    <span>LPDDR5 High Bandwidth</span>
                                 </div>
                             </div>
 
-                            <!-- Storage Card -->
+                            <!-- Disk Card -->
                             <div class="hud-card">
                                 <div class="hud-card-header">
-                                    <span class="hud-card-title">STORAGE (UFS / NVME)</span>
-                                    <span class="hud-card-value" id="hud-disk-val">42 GB / 256 GB (16%)</span>
+                                    <span class="hud-card-title">STORAGE (DISK)</span>
+                                    <span class="hud-card-value" id="hud-disk-val">42 GB / 256 GB</span>
                                 </div>
                                 <div class="hud-progress-bg">
-                                    <div class="hud-progress-fill fill-disk" id="hud-disk-bar" style="width: 16%;"></div>
+                                    <div class="hud-progress-fill fill-disk" id="hud-disk-bar" style="width: 16.4%;"></div>
                                 </div>
                                 <div class="hud-card-sub">
-                                    <span id="hud-disk-label">Internal /data partition</span>
-                                    <span>Free: 214 GB</span>
+                                    <span id="hud-disk-pct">16.4% Used</span>
+                                    <span id="hud-disk-mount">/data (Internal UFS 3.1)</span>
                                 </div>
                             </div>
 
-                            <!-- Network Card -->
+                            <!-- Network IO Card -->
                             <div class="hud-card">
                                 <div class="hud-card-header">
-                                    <span class="hud-card-title">NETWORK THROUGHPUT</span>
-                                    <span class="hud-card-value" id="hud-net-val">RX: 1.8 MB/s | TX: 340 KB/s</span>
+                                    <span class="hud-card-title">NETWORK TRAFFIC</span>
+                                    <span class="hud-card-value" id="hud-net-val">1.2 MB/s</span>
                                 </div>
-                                <div class="hud-progress-bg">
-                                    <div class="hud-progress-fill fill-net" id="hud-net-bar" style="width: 48%;"></div>
+                                <div class="hud-card-net-row">
+                                    <div class="net-stat">
+                                        <span class="net-lbl">RX (Download):</span>
+                                        <span class="net-val" id="hud-rx-val">980 KB/s</span>
+                                    </div>
+                                    <div class="net-stat">
+                                        <span class="net-lbl">TX (Upload):</span>
+                                        <span class="net-val" id="hud-tx-val">220 KB/s</span>
+                                    </div>
                                 </div>
                                 <div class="hud-card-sub">
-                                    <span id="hud-net-iface">wlan0 (Wi-Fi 6+ 160MHz)</span>
-                                    <span>Latency: 12ms</span>
+                                    <span>Wi-Fi 6+ 160MHz</span>
+                                    <span class="badge-ping" id="hud-ping-val">12ms</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Remote Docker & Top Processes Table -->
-                        <div class="hud-sub-section">
-                            <div class="section-head">CONTAINER / PROCESS TELEMETRY</div>
+                        <!-- Process / Container Live Table -->
+                        <div class="hud-section-title">ACTIVE RUNNING CONTAINERS / DAEMONS</div>
+                        <div class="hud-table-wrap">
                             <table class="hud-table">
                                 <thead>
                                     <tr>
-                                        <th>NAME / SERVICE</th>
+                                        <th>NAME</th>
                                         <th>IMAGE / CMD</th>
                                         <th>STATUS</th>
                                         <th>CPU %</th>
-                                        <th>MEM %</th>
+                                        <th>MEM USAGE</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -496,6 +639,7 @@
                     <button class="key-btn" data-key="PASTE">PASTE</button>
                     <button class="key-btn" data-key="CLEAR">CLEAR</button>
                 </div>
+
                 <!-- Termius Floating Action Button (FAB) -->
                 <button class="termius-fab" id="fab-add-host" title="Add Host / New Connection">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -505,6 +649,42 @@
                 </button>
             </section>
         </main>
+    </div>
+
+    <!-- Create Session Window Modal Dialog -->
+    <div class="modal-overlay hidden" id="modal-add-session-window">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Termius Pro Session Window Preset</h3>
+                <button class="icon-btn" id="modal-session-window-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="sw-workspace-name">Workspace Name</label>
+                    <input type="text" id="sw-workspace-name" placeholder="e.g. Quad Cloud Matrix">
+                </div>
+                <div class="form-group">
+                    <label for="sw-split-layout">Split Layout Matrix</label>
+                    <select id="sw-split-layout">
+                        <option value="SINGLE">1x1 Single Fullscreen</option>
+                        <option value="DUAL_H" selected>1x2 Dual Horizontal Split</option>
+                        <option value="DUAL_V">2x1 Dual Vertical Split</option>
+                        <option value="QUAD">2x2 Quad Matrix</option>
+                        <option value="PIP">Floating PiP Window</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Hosts to Bind</label>
+                    <div class="sw-hosts-checkboxes" id="sw-hosts-checkboxes">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="modal-session-window-cancel">Cancel</button>
+                <button class="btn-primary" id="modal-session-window-save">Save Preset</button>
+            </div>
+        </div>
     </div>
 
     <!-- Add Host Modal Dialog -->

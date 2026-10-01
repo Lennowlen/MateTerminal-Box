@@ -1,25 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Termius Dark Modern Palette -->
-    <color name="bg_primary">#0e111a</color>
-    <color name="bg_secondary">#161922</color>
-    <color name="bg_card">#1c202d</color>
-    <color name="bg_terminal">#090b10</color>
-    <color name="bg_sidebar">#141720</color>
+    <!-- Authentic Termius Midnight Pro Palette (com.server.auditor.ssh.client) -->
+    <color name="bg_primary">#151629</color>
+    <color name="bg_secondary">#1b1c2e</color>
+    <color name="bg_card">#25263a</color>
+    <color name="bg_card_active">#2d2f48</color>
+    <color name="bg_appbar">#202136</color>
+    <color name="bg_sidebar">#151629</color>
+    <color name="bg_drawer_header">#1a1b2f</color>
+    <color name="bg_terminal">#10111f</color>
+    <color name="bg_keybar">#18192c</color>
+    <color name="bg_key_chip">#27283e</color>
+    <color name="bg_key_chip_pressed">#7952ff</color>
+    <color name="bg_pill">#2f314d</color>
+    <color name="bg_dialog">#1e1f33</color>
     
-    <!-- Termius Brand Accents -->
+    <!-- Termius Pro Brand Accents -->
     <color name="accent_termius">#7952ff</color>
+    <color name="accent_termius_dark">#5a34e0</color>
     <color name="accent_cyan">#00d8d6</color>
-    <color name="accent_blue">#38bdf8</color>
     <color name="accent_emerald">#00e676</color>
     <color name="accent_amber">#ffb142</color>
     <color name="accent_rose">#ff5252</color>
     <color name="accent_purple">#7952ff</color>
+    <color name="accent_gold">#ffbe21</color>
+    <color name="accent_pro_badge">#7952ff</color>
 
-    <!-- Text & Borders -->
-    <color name="text_primary">#f0f6fc</color>
-    <color name="text_secondary">#8b949e</color>
-    <color name="text_muted">#586069</color>
-    <color name="border_color">#262b3a</color>
+    <!-- Text & State Palette -->
+    <color name="text_primary">#ffffff</color>
+    <color name="text_secondary">#a5a7c2</color>
+    <color name="text_muted">#686a87</color>
+    <color name="border_color">#2d2e45</color>
     <color name="border_focus">#7952ff</color>
+    <color name="divider_color">#232439</color>
+    
+    <!-- Floating / Split Window Colors -->
+    <color name="window_header_active">#2e304f</color>
+    <color name="window_header_inactive">#1e1f32</color>
+    <color name="window_border_active">#7952ff</color>
+    <color name="window_border_inactive">#2b2c44</color>
 </resources>
